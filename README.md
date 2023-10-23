@@ -1,5 +1,5 @@
-<h1 style="text-align: center;">William Amminger</h1>
-<p style="text-align: center;">
+<h1 style="text-align: center;" align="center">William Amminger</h1>
+<p style="text-align: center;" align="center">
 	194.077 Applied Deep Learning 2023W, VU, 2.0h, 3.0EC<br>
 	Assignment 1 - Initiate<br>
 	Due 24th October 2023<br>
@@ -49,21 +49,27 @@
 
 #### c. A work-breakdown structure for the individual tasks with time estimates (hours or days) for dataset collection; designing and building an appropriate network; training and fine-tuning that network; building an application to present the results; writing the final report; preparing the presentation of your work.
 
-Due 19th December 2023
+> Oct. 24th - Start
 
+> Oct. 31st - Build environment (1 week)
+> * Collect data on each object
+> * Construct object into Python
+> * Define ability to generate missing information
 
-he error metric you specified
-the target of that error metric that you want to achieve
-the actually achieved value of that metric
-the amount of time you spent on each task, according to your own work breakdown structure.
+> Nov. 7th - Define company as agent & route assigning as action (1 week)
+> * Describe deployment of a vehicle as an input to a network
+> * Specify behaviors of vehicles acquiring, transferring, & delivering parcels
 
+> Nov. 14th - Integrate progress into a reinforcement learning model (2 weeks)
+> * Formulate cost function
+> * Create timing increments for vehicles to operate within
 
+> Nov. 28th - Train model & finish code (3 weeks)
+> * Fine-tune environment to provide interesting results
+> * Try different cost function weights
+> * Look into adding additional constraints
+> * Create visualization
 
-Due 16th January 2024
+> Dec. 19th - Create report & presentation (4 weeks)
 
-    What is the problem that you tried to solve?
-    Why is it a problem?
-    What is your solution?
-    Why is it a solution? (And in particular, why is or isn’t deep learning a solution?)
-    
-    final report, presentaiton
+> Jan. 16th - Finish
