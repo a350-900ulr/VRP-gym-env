@@ -1,0 +1,81 @@
+name;address
+Stephansdom;Stephansplatz 3, 1010 Wien, Austria
+Kunsthistorisches Museum;Maria-Theresien-Platz, 1010 Wien, Austria
+Schönbrunn Palace;Schönbrunner Schloßstraße 47, 1130 Wien, Austria
+Naschmarkt;Kettenbrückengasse U4 Station, 1050 Wien, Austria
+Haus der Musik;Seilerstätte 30, 1010 Wien, Austria
+Tiergarten;Maxingstraße 13b, 1130 Wien, Austria
+MuseumsQuartier;Museumsplatz 1, 1070 Wien, Austria
+Staatsoper;Opernring 2, 1010 Wien, Austria
+Schloss Belvedere;Prinz-Eugen-Straße 27, 1030 Wien, Austria
+Hofburg;Neue Burg Heldenplatz Untergeschoß, Heldenplatz, 1010 Wien, Austria
+Museum Judenplatz;Judenpl. 8, 1010 Wien, Austria
+Albertina Modern;Karlsplatz 5, 1010 Wien, Austria
+Naturhistorisches Museum;Burgring 7, 1010 Wien, Austria
+Rathaus;Friedrich-Schmidt-Platz 1, 1010 Wien, Austria
+Riesenrad;Gaudeegasse 1, 1020 Wien, Austria
+Spanische Hofreitschule;Michaelerplatz 1, 1010 Wien, Austria
+Kapuzinergruft;Tegetthoffstraße 2, 1010 Wien, Austria
+Peterskirche;Peterspl. 1, 1010 Wien, Austria
+Demel;Kohlmarkt 14, 1010 Wien, Austria
+Karlskirche;Karlskirche, Karlsplatz 10, 1040 Wien, Austria
+Donauturm;Donauturmplatz 1, 1220 Wien, Austria
+Hundertwasserhaus;Kegelgasse 36-38, 1030 Wien, Austria
+Donauinsel (Nordbrücke);794H+FF Vienna, Austria
+Donauinsel (Bim Floridsdorfer Brücke);69XQ+F6 Vienna, Austria
+Donauinsel (U6); Sportinsel, 1210 Wien, Austria
+Donauinsel (Brigittenauer Brücke);Brigittenauer Brücke, 1210 Wien, Austria
+Donauinsel (U1);Reichsbrücke 215, 1020 Wien, Austria
+Donauinsel (Kaisermühlenbrücke);Kaisermühlenbrücke, 1220 Wien, Austria
+Donauinsel (U2);Donauinsel Umkehrpunkt, Austria
+Donauinsel (Steinspornbrücke);Steinspornbrücke 2, 1220 Wien, Austria
+Donauinsel (Kraftwerkbrücke);Kraftwerk Freudenau 370/1, 1020 Wien, Austria
+Donauinsel (Walulisobrücke);Campingplatz Ost, 1220 Wien, Austria
+Donauinsel (Gerhard Weber Wehrbrücke);Schleusenbrücke Wehr 2, 1220 Wien, Austria
+Parlament;Dr. Karl Renner-Ring 3, 1017 Wien, Austria
+Donnerbrunnen;Neuer Markt, 1010 Wien, Austria
+Burgtheater;Universitätsring 2, 1010 Wien, Austria
+Heeresgeschichtliches Museum;Arsenal 1, 1030 Wien, Austria
+Franziskanerkirche;Franziskanerpl. 4, 1010 Wien, Austria
+Sigmund Freud Museum;Berggasse 19, 1090 Wien, Austria
+Donaustadt;Donau-City-Straße 7, 1220 Wien, Austria
+Stadtpark;Parkring 1, 1010 Wien, Austria
+Burggarten;Josefsplatz 1, 1010 Wien, Austria
+Haus des Meeres;Fritz-Grünbaum-Platz 1, 1060 Wien, Austria
+Flakturm VII G-Turm Augarten;Flak tower, Augarten, 1020 Wien, Austria
+Karmelitermarkt;Karmelitermarkt, 1020 Wien, Austria
+Brunnenmarkt;Brunnengasse 21160, 1160 Wien, Austria
+Ottakringer Brauerei;Ottakringer Pl. 1, 1160 Wien, Austria
+Neuwaldegg;Waldegghofgasse, 1170 Wien, Austria
+Museum für angewandte Kunst;Stubenring 5, 1010 Wien, Austria
+Wienerberg City;BusinessPark Wienerberg, Carl-Appel-Straße 5/Top Lokal 1, 1100 Wien, Austria
+Pötzleinsdorfer Schlosspark;Geymüllergasse Pötzleinsdorfer, Schloßpark, 1180 Wien, Austria
+Türkenschanzpark;Hasenauerstraße Türkenschanzpark, 1180 Wien, Austria
+Steinhofgründe;Baumgartner Höhe, 1140 Wien, Austria
+Setagayapark;Gallmeyergasse 4, 1190 Wien, Austria
+Schwedenplatz;Franz-Josefs-Kai 2 EG, 1010 Wien, Austria
+Votivkirche;Rooseveltplatz, 1090 Wien, Austria
+Café Eiles;Josefstädter Str. 2, 1080 Wien, Austria
+Ernst Happel Stadium;Meiereistraße 7, 1020 Wien, Austria
+Kahlenberg;Am Kahlenberg, 1190 Wien, Austria
+Hohe Warte Stadion;Klabundgasse 11, 1190 Wien, Austria
+Rochusmarket;Landstraßer Hauptstraße 03, 1030 Wien, Austria
+Hauptbahnhof Wien;Wien Südbahnhof, Am Hbf 1, 1100 Wien, Austria
+Zentralfriedhof;Simmeringer Hauptstraße 234, 1110 Wien, Austria
+Donau-Auen - Eingang Wien-Lobau;Dechantweg 10, 1220 Wien, Austria
+Prater-Haupallee;Hauptallee 124, 1020 Wien, Austria
+Volkstheater;Arthur-Schnitzler-Platz 1, 1070 Wien, Austria
+Westbahnhof;Europaplatz 2/3, 1150 Wien, Austria
+Theater in der Josefstadt;Josefstädter Str. 26, 1080 Wien, Austria
+Wien Mitte Mall;Landstraßer Hauptstraße 1b, 1030 Wien, Austria
+Liechtenstein Garden Palace;Fürstengasse 1, 1090 Wien, Austria
+Wien Energie Service Center Spittelau;Nordbergbrücke 33, 1090 Wien, Austria
+Aupark - Jedlesee;Christian-Bucher-Gasse 4, 1210 Wien, Austria
+Friedhof Wien Südwest;Hervicusgasse 44, 1120 Wien, Austria
+Schloss Hetzendorf;Hetzendorfer Str. 79, 1120 Wien, Austria
+Gürtel;U-Bahn Bogen Gürtellinie 22-23, 1080 Wien, Austria
+Hauptbücherei;Urban-Loritz-Platz 2a, 1070 Wien, Austria
+Böhmischer Prater;Laaer Wald 216, 1100 Wien, Austria
+Kurpark Oberlaa;Laaer-Berg-Straße, 1100 Wien, Austria
+Seestadt;Janis-Joplin-Promenade 26, 1220 Wien, Austria
+Auhof Center;Albert-Schweitzer-Gasse 6, 1140 Wien, Austria
