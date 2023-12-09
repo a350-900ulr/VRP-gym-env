@@ -1,9 +1,10 @@
-# to create 'wien_travel_times.csv'
-# please do not run giant for loop because i am using a free version google cloud account
+# acquires the travel times between all places
 
-# set all queries to be at the same time of day so that the results are fair
-depart = '2023-06-14T11:00'
-offset = [0, 0]  # incase it crashes before finishing, to continue writing to debug file
+inputFile = '../places/attractions.txt'
+outputFile = 'wien_travel_times.csv'
+depart = '2023-06-14 11:00'  # set all queries to be at the same time of day so that the results are fair
+offset = [0, 0]  # incase it crashes before finishing, to continue writing to file
+
 
 import pandas as pd
 import datetime      # to read input date parameter
@@ -13,20 +14,18 @@ import requests      # to make google maps API call
 import json
 
 # get each place name & address into python lists
-places = pd.read_csv('../places/attractions.txt', sep=';')
+places = pd.read_csv(inputFile, sep=';')
 names = places['name'].tolist()
 addresses = places['address'].tolist()
 
-#travel_times = pd.DataFrame()  # holds all the data
 errors = []  # will hold any failed requests
 
 # convert depart date into unix time for google
 depart_unix = str(int(time.mktime(
-	datetime.datetime.strptime(depart, '%Y-%m-%dT%H:%M').timetuple()
+	datetime.datetime.strptime(depart, '%Y-%m-%d %H:%M').timetuple()
 )))
 
-# to reduce the number of API calls,
-# the distance between 2 places is only calculated in 1 direction
+# to reduce the number of API calls the distance between 2 places is only calculated in 1 direction
 
 # 80 places, combinations = 79 + 78 + 77 + 76....
 # falling summation = (n^2 - n) / 2 = 3160 combinations
@@ -57,23 +56,13 @@ for place1index in range(len(places)):
 			# if directions where found, append it to the dataframe
 			# otherwise, create an errors list
 			if info['status'] == 'OK':
-				'''
-				travel_times = pd.concat([travel_times, pd.Series({
-					'place1': names[place1index],
-					'place2': names[place2index],
-					'mode': mode,
-					'time': info['duration']['value'] / 60,
-					'distance': info['distance']['value']
-				}).to_frame().T], ignore_index=True)
-				'''
-
-				output_file = open('wien_travel_times.csv', 'a')
-				output_file.write(
+				outputFileWriter = open(outputFile, 'a')
+				outputFileWriter.write(
 					f"{place1index};{place2index};"
 					f"{names[place1index]};"f"{names[place2index]};{mode};"
 					f"{info['duration']['value'] / 60};{info['distance']['value']}\n"
 				)
-				output_file.close()
+				outputFileWriter.close()
 
 			else:
 				print(f"unexpected status {info['status']}, see errors list")
