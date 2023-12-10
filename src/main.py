@@ -5,6 +5,8 @@ vehicles = 20
 '''
 https://keras.io/examples/rl/ppo_cartpole/
 https://stackoverflow.com/questions/46422845/what-is-the-way-to-understand-proximal-policy-optimization-algorithm-in-rl#50663200
+
+ideas: limit time riding (as episode), make part of reward distance packet is from target
 '''
 
 import numpy as np
@@ -51,22 +53,23 @@ def create_distance_matrix():
 
 	distances = distances[distances['mode'] == 'bicycling']
 
-
-
 	del distances['mode']
 
 	dist_matrix = np.zeros((80, 80))
 
 	for place1 in range(80):
 		for place2 in range(place1+1, 80):
-			dist_matrix[place1, place2] = distances[
-				(distances['place1index'] == place1) &
-				(distances['place2index'] == place2)]['duration'].values[0]
+			# set both values on both sides of the diagonal
+			dist_matrix[place1, place2], dist_matrix[place2, place1] = 2 * [round(
+				distances[
+					(distances['place1index'] == place1) &
+					(distances['place2index'] == place2)
+				]['duration'].values[0],
+			1)]  # round to 1 decimal place ~ 6 seconds
+
+	return dist_matrix
 
 
+test = create_distance_matrix()
 
-
-a = np.array([1, 2, 3])
-print(a)               # Output: [1, 2, 3]
-print(type(a))         #
 
