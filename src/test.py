@@ -1,3 +1,14 @@
+'''
+links:
+https://chat.openai.com
+https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html
+https://stable-baselines3.readthedocs.io/en/master/guide/custom_env.html
+https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/#sphx-glr-tutorials-gymnasium-basics-environment-creation-py
+https://gymnasium.farama.org/api/env/
+https://www.gymlibrary.dev/api/spaces/
+https://github.com/openai/gym/blob/master/gym/spaces/graph.py#L13
+'''
+
 
 import numpy as np
 import pandas as pd

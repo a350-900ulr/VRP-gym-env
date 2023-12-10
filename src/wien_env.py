@@ -3,7 +3,7 @@
 import gymnasium as gym
 import numpy as np
 from gymnasium.spaces import Tuple, MultiDiscrete, Dict, Graph, Discrete, GraphInstance
-from wien_graph import WienGraph, WienGraphArgs
+from wien_graph import WienGraph
 
 class CustomEnv(gym.Env):
 	def __init__(self, vehicle_count: int):
