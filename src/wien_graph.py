@@ -42,22 +42,23 @@ class WienGraph():
 				if place1 == place2:
 					continue
 
-				try:
-					distance = round(
-						distances[
-							(distances['place1index'] == place1) &
-							(distances['place2index'] == place2)
-						]['duration'].values[0]
-					, 1)
-				except IndexError:
-					distance = round(
-						distances[
-							(distances['place1index'] == place2) &
-							(distances['place2index'] == place1)
-							]['duration'].values[0]
-						, 1)
+				# the distances table only has data for a single direction
+				# being the smaller number to the larger
+				# so when place1 is larger than place2, the table filter is swapped
+				if place1 < place2:  # normal case
+					distance = distances[
+						(distances['place1index'] == place1) &
+						(distances['place2index'] == place2)
+					]
+				else:
+					distance = distances[
+						(distances['place1index'] == place2) &
+						(distances['place2index'] == place1)
+					]
 
-				print(f'\np1: {place1}\np2: {place2}\n\tdistance: {distance}')
+				distance = round(distance['duration'].values[0], 1)
+
+				#print(f'\np1: {place1}\np2: {place2}\n\tdistance: {distance}')
 
 				edge_lengths[place1*2], edge_lengths[place1*2 + 1] = 2 * [distance]
 
@@ -78,8 +79,12 @@ class WienGraph():
 			nodes = self.get_node_coordinates(),
 			edges = edge_details['edge_lengths'],
 			edge_links = edge_details['edge_endpoints']
-		),
+		)
+
+	def debug(self):
+		edge_details = self.get_edge_details()
+		return (self.get_node_coordinates(), edge_details['edge_lengths'])
 
 
-test = WienGraph(number_of_places=20).create_instance()
-# idk these numbers dont look right
+
+testnode, testedges = WienGraph(number_of_places=20).debug()
