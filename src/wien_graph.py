@@ -1,42 +1,58 @@
 # https://github.com/openai/gym/blob/master/gym/spaces/graph.py#L13
-from typing import TypedDict
 
 import numpy as np
 import pandas as pd
 import random
-from gymnasium.spaces import Tuple, MultiDiscrete, Dict, Graph, Discrete, GraphInstance
+from gymnasium.spaces import GraphInstance
 
-
-
-
-class WienGraph():
-
+class WienGraph:
 	def __init__(self, number_of_places=80, randomize_places=False):
+		"""
+		Creates a :class:`GraphInstance` space instance defined by `gymnasium.spaces.Graph` using csv files of place coordinates & distances between them.
+
+		:param number_of_places: How many places to keep from the full set of 80. This number is usually kept small as the number of edges grows exponentially.
+		:param randomize_places: Whether to randomize the selected subset instead of keeping simple the first 20 or so. When using the full set, this parameter does nothing.
+		"""
 
 		self.places = number_of_places
-		# place indicies to pick from
+
+		# indicies of places to pick from
 		self.picks = random.sample(range(80), number_of_places) if randomize_places \
 			else range(number_of_places)
 		self.coordinates_file = '../data/places/places.csv'
 		self.distances_file = '../data/travel_times/wien_travel_times.csv'
 
 	def get_node_coordinates(self) -> np.array:
+		"""
+		Generates the 1st required object 'nodes'.
+		:return: Distance table filtered by the chosen locations in `self.picks` & then by retaining only the longitude & latitude columns. Since there is no label column, the node is simply indicated by the row position.
+		"""
 		distances = pd.read_csv(self.coordinates_file, sep=';')
 		return distances.iloc[self.picks][['latitude', 'longitude']].values
 
-	def get_edge_details(self) -> dict:
+	def get_edge_details(self, verbose=False) -> dict:
+		"""
+		Creates the edge data, including the lengths in a (`self.places` * 1) np.array & the edge endpoints in a (`self.places` * 2) np.array.
+		:param verbose: Prints initially calculated # of edges, then within the loop print the places, calculated indicies, & inserted distance value.
+		:return: Dictionary of the 2nd & 3rd objects required for :class:`GraphInstance` with the keys 'edge_lengths' & 'edge_endpoints'.
+		"""
 
-		edge_count = self.places * (self.places-1)
-		print(f'\n# of places: {self.places}\ncalculated # of edges: {edge_count}')
+		edge_count = self.places * (self.places-1) * 2
+
+		if verbose:
+			print(
+				f'\n# of places: {self.places}\n'
+				f'calculated # of edges: {edge_count} (both directions)'
+			)
 
 		# get distance data
 		distances = pd.read_csv(self.distances_file, sep=';', encoding='ISO-8859-1')
 		distances = distances[distances['mode'] == 'bicycling']
-		#print(distances)
 
 		edge_lengths = np.empty(shape=edge_count)
 		edge_endpoints = np.empty(shape=(edge_count, 2))
 
+		cali = 0  # calculated index
 		for place1 in self.picks:
 			for place2 in self.picks:
 				if place1 == place2:
@@ -50,41 +66,51 @@ class WienGraph():
 						(distances['place1index'] == place1) &
 						(distances['place2index'] == place2)
 					]
+
 				else:
 					distance = distances[
 						(distances['place1index'] == place2) &
 						(distances['place2index'] == place1)
 					]
 
-				distance = round(distance['duration'].values[0], 1)
+				distance = round(distance['duration'].values[0])
 
-				#print(f'\np1: {place1}\np2: {place2}\n\tdistance: {distance}')
+				if verbose:
+					print(
+						f"{place1:03d}_{place2:03d}->{cali:03d}+{cali+1:03d}"
+						f"\n\tdistance: {distance}"
+					)
 
-				edge_lengths[place1*2], edge_lengths[place1*2 + 1] = 2 * [distance]
+				edge_lengths[cali], edge_lengths[cali + 1] = 2 * [distance]
+				edge_endpoints[cali] = [place1, place2]
+				edge_endpoints[cali + 1] = [place2, place1]
 
-				edge_endpoints[place1*2] = [place1, place2]
-				edge_endpoints[place1*2 + 1] = [place2, place1]
+				cali += 2  # update calculated index
 
 		return {
 			'edge_lengths': edge_lengths,
 			'edge_endpoints': edge_endpoints
 		}
 
-
-	def create_instance(self):
-
+	def raw_output(self):
+		"""
+		Intermediary function to combine the 3 required objects required to be converted into :class:`GraphInstance` via `create_instance`.
+		:return: tuple of node coordinates, edge lengths, and edge endpoints.
+		"""
 		edge_details = self.get_edge_details()
-
-		return GraphInstance(
-			nodes = self.get_node_coordinates(),
-			edges = edge_details['edge_lengths'],
-			edge_links = edge_details['edge_endpoints']
+		return (
+			self.get_node_coordinates(),
+			edge_details['edge_lengths'],
+			edge_details['edge_endpoints']
 		)
 
-	def debug(self):
-		edge_details = self.get_edge_details()
-		return (self.get_node_coordinates(), edge_details['edge_lengths'])
+	def create_instance(self):
+		"""
+		Converts raw output data into :class:`GraphInstance` object
+		:return:
+		"""
+		nodes, edges, edge_links = self.raw_output()
+		return GraphInstance(nodes, edges, edge_links)
 
 
-
-testnode, testedges = WienGraph(number_of_places=20).debug()
+testnode, testlen, testend = WienGraph(number_of_places=20).raw_output()

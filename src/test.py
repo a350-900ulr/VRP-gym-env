@@ -1,4 +1,7 @@
 '''
+file to test random stuff
+
+
 links:
 https://chat.openai.com
 https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html
@@ -12,6 +15,7 @@ https://github.com/openai/gym/blob/master/gym/spaces/graph.py#L13
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def create_distance_matrix():
 	distances = pd.read_csv(
@@ -42,39 +46,21 @@ def create_distance_matrix():
 
 
 
-"""A Graph space instance.
-
-* nodes (np.ndarray): an (n x ...) sized array representing the features for n nodes, (...) must adhere to the shape of the node space.
-* edges (Optional[np.ndarray]): an (m x ...) sized array representing the features for m edges, (...) must adhere to the shape of the edge space.
-* edge_links (Optional[np.ndarray]): an (m x 2) sized array of ints representing the indices of the two nodes that each edge connects.
-"""
 
 
+import pandas as pd
+import matplotlib.pyplot as plt
 
+distances = pd.read_csv(
+	'../data/travel_times/wien_travel_times.csv',
+	sep = ';',
+	encoding = "ISO-8859-1"
+)
 
+distances = distances[distances['mode'] == 'bicycling']
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+del distances['mode']
+plt.hist(distances['duration'], bins=50)
 
 
 
@@ -112,3 +98,25 @@ class testClass(NamedTuple):
 tester = testClass([x for x in range(10)])
 
 tester.bepis
+
+
+
+
+
+
+
+
+
+
+
+
+picks = range(20)
+cali = 0
+for place1 in range(len(picks)):
+	for place2 in range(place1+1, len(picks)):
+
+
+		#cali = (place1)*2 + place1*len(picks) + (place2)*2  # calculate index
+
+		print(f"{place1:03d}_{place2:03d}->{cali:03d}+{cali+1:03d}")
+		cali += 2
