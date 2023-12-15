@@ -120,3 +120,19 @@ for place1 in range(len(picks)):
 
 		print(f"{place1:03d}_{place2:03d}->{cali:03d}+{cali+1:03d}")
 		cali += 2
+
+
+
+
+
+
+
+
+
+
+
+
+
+import src.funcs as fn
+
+fn.create_distance_matrix()
