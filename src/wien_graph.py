@@ -16,7 +16,7 @@ class WienGraph:
 
 		self.places = number_of_places
 
-		# indicies of places to pick from
+		# indices of places to pick from
 		self.picks = random.sample(range(80), number_of_places) if randomize_places \
 			else range(number_of_places)
 		self.coordinates_file = '../data/places/places.csv'

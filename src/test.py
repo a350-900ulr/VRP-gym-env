@@ -42,9 +42,10 @@ def create_distance_matrix():
 
 	return dist_matrix
 
+# how
+test = create_distance_matrix()
 
-
-
+test[1][2]
 
 
 

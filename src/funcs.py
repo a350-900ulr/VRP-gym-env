@@ -27,3 +27,17 @@ def create_distance_matrix():
 			)]
 
 	return dist_matrix
+
+
+def filler(amount: int, fill_with=None, random_int_up_to_fill: bool=False):
+	"""
+	:param amount: length of list to return
+	:param fill_with: value to fill the list with, or in the case of randomization fill with a andom integer in range of [0, fill_with)
+	:param random_int_up_to_fill: choice to randomize an integer range
+	:return: list filled with specified values
+	"""
+	import random
+	if random_int_up_to_fill:
+		return [random.randrange(fill_with) for _ in range(amount)]
+	else:
+		return [fill_with for _ in range(amount)]
