@@ -137,3 +137,11 @@ for place1 in range(len(picks)):
 import src.funcs as fn
 
 fn.create_distance_matrix()
+
+
+
+from stable_baselines3.common.env_checker import check_env
+from src.wien_env import WienEnv
+
+# It will check your custom environment and output additional warnings if needed
+check_env(WienEnv())

@@ -3,9 +3,10 @@
 import numpy as np
 import pandas as pd
 import random
-from gymnasium.spaces import GraphInstance
+from gymnasium.spaces import GraphInstance, Graph, Box, Discrete
+from typing import NamedTuple
 
-class WienGraph:
+class WienGraph(Graph):
 	def __init__(self, number_of_places=80, randomize_places=False):
 		"""
 		Creates a :class:`GraphInstance` space instance defined by `gymnasium.spaces.Graph` using csv files of place coordinates & distances between them.
@@ -14,6 +15,12 @@ class WienGraph:
 		:param randomize_places: Whether to randomize the selected subset instead of keeping simple the first 20 or so. When using the full set, this parameter does nothing.
 		"""
 
+		self.template = {
+			'node_space': Box(low=16.22390075, high=48.2748237),
+			'edge_space': Discrete(1)
+		}
+
+		super().__init__(*self.template)
 		self.places = number_of_places
 
 		# indices of places to pick from
@@ -61,17 +68,11 @@ class WienGraph:
 				# the distances table only has data for a single direction
 				# being the smaller number to the larger
 				# so when place1 is larger than place2, the table filter is swapped
-				if place1 < place2:  # normal case
-					distance = distances[
-						(distances['place1index'] == place1) &
-						(distances['place2index'] == place2)
-					]
 
-				else:
-					distance = distances[
-						(distances['place1index'] == place2) &
-						(distances['place2index'] == place1)
-					]
+				distance = distances[
+					(distances['place1index'] == min(place1, place2)) &
+					(distances['place2index'] == max(place1, place2))
+				]
 
 				distance = round(distance['duration'].values[0])
 
@@ -92,7 +93,7 @@ class WienGraph:
 			'edge_endpoints': edge_endpoints
 		}
 
-	def raw_output(self):
+	def raw_output(self) -> tuple[np.array, np.array, np.array]:
 		"""
 		Intermediary function to combine the 3 required objects required to be converted into :class:`GraphInstance` via `create_instance`.
 		:return: tuple of node coordinates, edge lengths, and edge endpoints.
@@ -104,7 +105,7 @@ class WienGraph:
 			edge_details['edge_endpoints']
 		)
 
-	def create_instance(self):
+	def create_instance(self) -> GraphInstance:
 		"""
 		Converts raw output data into :class:`GraphInstance` object
 		:return:
@@ -112,5 +113,15 @@ class WienGraph:
 		nodes, edges, edge_links = self.raw_output()
 		return GraphInstance(nodes, edges, edge_links)
 
+	def get_template(self) -> Graph:
 
-testnode, testlen, testend = WienGraph(number_of_places=20).raw_output()
+		return Graph(*self.template)
+
+
+#testnode, testlen, testend = WienGraph(number_of_places=20).raw_output()
+
+test = WienGraph().get_node_coordinates()
+
+
+min(test[:, 1])
+max(test[:, 0])

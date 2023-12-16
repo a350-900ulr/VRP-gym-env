@@ -1,4 +1,3 @@
-# https://stable-baselines3.readthedocs.io/en/master/guide/custom_env.html
 from typing import Any
 
 import gymnasium as gym
@@ -7,12 +6,12 @@ from src.wien_graph import WienGraph
 from src.funcs import create_distance_matrix, filler
 import random
 
-class CustomEnv(gym.Env):
+class WienEnv(gym.Env):
 
 	"""Custom Environment that follows gym interface."""
 	metadata = {"render_modes": ["human"], "render_fps": 30}
 
-	def __init__(self, place_count: int, vehicle_count: int, package_count: int):
+	def __init__(self, place_count: int = 20, vehicle_count: int = 10, package_count: int = 10):
 		super().__init__()
 
 		self.clock = 0
@@ -28,7 +27,7 @@ class CustomEnv(gym.Env):
 		self.environment = self.reset()
 
 		self.observation_space = Dict({
-			'distance_info': WienGraph(),  # GraphInstance
+			'distance_info': WienGraph().template,
 			'vehicle_info': Dict({
 				'id': Discrete(vehicle_count),
 				'availability': MultiBinary(vehicle_count),
@@ -145,6 +144,7 @@ class CustomEnv(gym.Env):
 			elif not pack('delivered') and pack('carrying_vehicle') is not None:
 				def vehi(key):
 					return self.environment['vehicles'][key][pack('carrying_vehicle')]
+
 				def vehi_set(key, val):
 					self.environment['vehicles'][key][pack('carrying_vehicle')] = val
 				# check if package could be delivered
