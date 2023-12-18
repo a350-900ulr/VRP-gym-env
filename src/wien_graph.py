@@ -15,12 +15,12 @@ class WienGraph(Graph):
 		:param randomize_places: Whether to randomize the selected subset instead of keeping simple the first 20 or so. When using the full set, this parameter does nothing.
 		"""
 
-		self.template = {
-			'node_space': Box(low=16.22390075, high=48.2748237),
-			'edge_space': Discrete(1)
+		self.template = {  # parameters for a gymnasium graph object
+			'node_space': Box(low=16.22390075, high=48.2748237, shape=(20, 2)),
+			'edge_space': Box(low=0, high=33, shape=(760, 3)),
 		}
 
-		super().__init__(*self.template)
+		super().__init__(*self.template.values())
 		self.places = number_of_places
 
 		# indices of places to pick from
@@ -95,7 +95,7 @@ class WienGraph(Graph):
 
 	def raw_output(self) -> tuple[np.array, np.array, np.array]:
 		"""
-		Intermediary function to combine the 3 required objects required to be converted into :class:`GraphInstance` via `create_instance`.
+		Intermediary function to combine the 3 required objects as a tuple, later to be converted into :class:`GraphInstance` via `create_instance`.
 		:return: tuple of node coordinates, edge lengths, and edge endpoints.
 		"""
 		edge_details = self.get_edge_details()
@@ -105,23 +105,26 @@ class WienGraph(Graph):
 			edge_details['edge_endpoints']
 		)
 
-	def create_instance(self) -> GraphInstance:
+	def sample(self) -> GraphInstance:
 		"""
 		Converts raw output data into :class:`GraphInstance` object
-		:return:
 		"""
 		nodes, edges, edge_links = self.raw_output()
 		return GraphInstance(nodes, edges, edge_links)
 
 	def get_template(self) -> Graph:
+		"""
+		Returns `gymnasium.spaces` object as required in the observation space of the custom environment, being the bounding boxes of the nodes & the edge space
+		"""
+		return Graph(*self.template.values())
 
-		return Graph(*self.template)
 
-
-#testnode, testlen, testend = WienGraph(number_of_places=20).raw_output()
+'''
+testnode, testlen, testend = WienGraph(number_of_places=20).raw_output()
 
 test = WienGraph().get_node_coordinates()
 
 
 min(test[:, 1])
 max(test[:, 0])
+'''

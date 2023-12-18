@@ -12,8 +12,6 @@ def create_distance_matrix():
 
 	distances = distances[distances['mode'] == 'bicycling']
 
-	del distances['mode']
-
 	dist_matrix = np.zeros((80, 80))
 
 	for place1 in range(80):

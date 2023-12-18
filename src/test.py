@@ -139,9 +139,27 @@ import src.funcs as fn
 fn.create_distance_matrix()
 
 
+import numpy as np
+from src.wien_graph import WienGraph
+test = np.array([*WienGraph().raw_output()], dtype=object)
+
+
+testnode, testlen, testend = WienGraph(number_of_places=20).raw_output()
+test = np.c_[ testend, testlen ]
+
 
 from stable_baselines3.common.env_checker import check_env
 from src.wien_env import WienEnv
 
 # It will check your custom environment and output additional warnings if needed
 check_env(WienEnv())
+
+
+
+
+
+
+
+
+
+

@@ -1,10 +1,12 @@
 from typing import Any
 
 import gymnasium as gym
-from gymnasium.spaces import Tuple, MultiDiscrete, Dict, Graph, Discrete, GraphInstance, MultiBinary
+from gymnasium.spaces import (
+	Tuple, MultiDiscrete, Dict, Graph, Discrete, GraphInstance, MultiBinary
+)
 from src.wien_graph import WienGraph
 from src.funcs import create_distance_matrix, filler
-import random
+import numpy as np
 
 class WienEnv(gym.Env):
 
@@ -24,11 +26,11 @@ class WienEnv(gym.Env):
 		self.distance_matrix = create_distance_matrix()
 
 		# initial values for environment itself. This will also be returned during self.step()
-		self.environment = self.reset()
+		self.environment, _ = self.reset()
 
 		self.observation_space = Dict({
-			'distance_info': WienGraph().template,
-			'vehicle_info': Dict({
+			'distances': self.graph_object.get_template(),
+			'vehicles': Dict({
 				'id': Discrete(vehicle_count),
 				'availability': MultiBinary(vehicle_count),
 				'transit_start': Discrete(vehicle_count),
@@ -36,7 +38,7 @@ class WienEnv(gym.Env):
 				'transit_remaining': Discrete(vehicle_count),
 				'has_package': Discrete(vehicle_count),
 			}),
-			'package_info': Dict({
+			'packages': Dict({
 				'id': Discrete(package_count),
 				'location_current': Discrete(package_count),
 				'location_target':  Discrete(package_count),
@@ -53,7 +55,7 @@ class WienEnv(gym.Env):
 		Run one timestep of the environment’s dynamics using the agent actions.
 
 		:param action: idk man
-		:return: lots of stuff
+		:return: observation, reward, terminated, truncated, info
 		"""
 		assert action.size == self.vehicle_count
 		for dispatch_location in action:
@@ -66,7 +68,8 @@ class WienEnv(gym.Env):
 
 			if vehi('transit_remaining') == 0:
 				vehi_set('transit_end', vehicle_decision)
-				vehi_set('transit_remaining',
+				vehi_set(
+					'transit_remaining',
 					self.distance_matrix[vehi('transit_start')][vehicle_decision]
 				)
 
@@ -84,55 +87,59 @@ class WienEnv(gym.Env):
 			{'time': self.clock},
 		)
 
-	def reset(self, seed=None, options=None) -> dict:
-		# y does this needa return anything?
-		return {
-			'distances': self.graph_object.create_instance(),  # GraphInstance
-			'vehicles': {
-				'id': range(self.vehicle_count),
-				'available': filler(self.vehicle_count, True),
-				'transit_start': filler(
-					self.vehicle_count, self.place_count, True),
-				'transit_end': filler(self.vehicle_count),
-				'transit_remaining': filler(self.vehicle_count, 0),
-				'has_package': filler(self.vehicle_count)
+	def reset(self, seed=None, options=None) -> tuple:
+		self.clock = 0
+		self.total_travel = 0
+		_, lengths, ends = WienGraph(number_of_places=20).raw_output()
+		return (
+			{  # environment object
+				'distances': np.c_[ends, lengths],
+				'vehicles': {
+					'id': range(self.vehicle_count),
+					'available': filler(self.vehicle_count, True),
+					'transit_start': filler(
+						self.vehicle_count, self.place_count, True),
+					'transit_end': filler(self.vehicle_count),
+					'transit_remaining': filler(self.vehicle_count, 0),
+					'has_package': filler(self.vehicle_count)
+				},
+				'packages': {
+					'id': range(self.package_count),
+					'location_current': filler(
+						self.package_count, self.place_count, True),
+					'location_target': filler(
+						self.package_count, self.place_count, True),
+					'carrying_vehicle': filler(self.package_count),
+					'delivered': filler(self.package_count, False)
+				},
 			},
-			'packages': {
-				'id': range(self.package_count),
-				'location_current': filler(
-					self.package_count, self.place_count, True),
-				'location_target':  filler(
-					self.package_count, self.place_count, True),
-				'carrying_vehicle': filler(self.package_count),
-				'delivered': filler(self.package_count, False)
-			},
-		}
-
-	def render(self):
-		...
-
-	def close(self):
-		...
+			{
+				'test': 'test'
+			}
+		)
 
 	def automate_packages(self):
 		"""
 		automatically pick up packages when vehicle passes over, automatically drop off at location
-		:return: number of packages that have been delivered
+		:return: number of packages that have been delivered for reward function
 		"""
 		reward = 0
 		for p in range(self.package_count):
 
-			# make sure delivered statuses are updated
+			# helper functions to shorten navigation of the object environment dictionary
 			def pack(key): return self.environment['packages'][key][p]
 			def pack_set(key, val): self.environment['packages'][key][p] = val
+
+			# set any packages to delivered if they are in their target location
 			if pack('location_current') == pack('location_target') and not pack('delivered'):
-				self.environment['packages']['delivered'][p] = True
+				pack_set('delivered', True)
 
 			if not pack('delivered') and pack('carrying_vehicle') is None:
 				# make sure vehicles fulfill any request at any location if possible
 				for v in range(self.vehicle_count):
 					def vehi(key): return self.environment['vehicles'][key][v]
 					def vehi_set(key, val): self.environment['vehicles'][key][v] = val
+
 					if (vehi('available') and
 						vehi('transit_start') == pack('location_current') and
 						vehi('transit_remaining') == 0
