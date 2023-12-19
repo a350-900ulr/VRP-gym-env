@@ -23,6 +23,6 @@ done = False
 while not done:
 	action, _states = model.predict(obs)
 	obs, rewards, done, info = vec_env.step(action)
-	if rewards > 0:	print(rewards, end='')
+	print(rewards, end='')
 	vec_env.render("human")
 

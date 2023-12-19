@@ -74,6 +74,7 @@ class WienEnv(gym.Env):
 			def vehi_set(key, val): self.environment[key][v] = val
 
 			if vehi('v_transit_remaining') == 0:
+				vehi_set('v_transit_start', vehi('v_transit_end'))
 				vehi_set('v_transit_end', vehicle_decision)
 				vehi_set(
 					'v_transit_remaining',
@@ -201,6 +202,9 @@ class WienEnv(gym.Env):
 		return reward
 
 	def get_package_distances(self):
+		"""
+		Get the sum of all distances each package is away from its target. This is used to later calculate a micro-reward for the model getting packages closer to their destination.
+		"""
 		distance = 0
 		for p, p_start in enumerate(self.environment['p_location_current']):
 			distance += self.distance_matrix[p_start][self.environment['p_location_target'][p]]

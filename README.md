@@ -14,17 +14,17 @@ First of all, no results were achieved. The model was unable to deliver a packag
 The original exercise 1 describe a multi-modal environment with different vehicle types with their own capabilities. This has been simplified into a single mode: a bicycle. Besides complexity reduction, this was also done to reduce the amount of distance data that would be required for multiple modes. The physical space has also been moved to Vienna from a random environment, since the problem is no longer representing containers shipping. The end result is a distance matrix of bicycle travel time between many real places in Vienna. 
 
 
-## * The error metric you specified
+## * The error metric you specified + reward function
 
-It was attempted to create an error metric of the amount of total time traveled by all vehicles. 
+It was attempted to create an error metric of the amount of total time traveled by all vehicles. The reward function is the number of packages delivered + (initial package distance - current package distance) / 1000
 
-## * The target of that error metric that you want to achieve
+## * The target of that error metric that you want to achieve + achieved reward
 
-The goal was to get this number to be the same as the sum of distances each package would be from its target destination. This would be the ideal case where no bike travels without making a delivery.
+The goal was to get this number to be the same as the sum of distances each package would be from its target destination. This would be the ideal case where no bike travels without making a delivery. The maximum reward would be the number of packages + a small amount from the distances the packages traveled
 
 ## * The actually achieved value of that metric
 
-The error is infinity, as the model never accomplishes the task in any given timeframe.
+The error is infinity, as the model never accomplishes the task in any given timeframe. The reward achieved was also 0
 
 ## * The amount of time you spent on each task, according to your own work breakdown
 
