@@ -26,8 +26,8 @@ class WienGraph(Graph):
 		# indices of places to pick from
 		self.picks = random.sample(range(80), number_of_places) if randomize_places \
 			else range(number_of_places)
-		self.coordinates_file = '../data/places/places.csv'
-		self.distances_file = '../data/travel_times/wien_travel_times.csv'
+		self.coordinates_file = '../../data/places/places.csv'
+		self.distances_file = '../../data/travel_times/wien_travel_times.csv'
 
 	def get_node_coordinates(self) -> np.array:
 		"""

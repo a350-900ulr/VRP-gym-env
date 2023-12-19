@@ -13,10 +13,6 @@ https://github.com/openai/gym/blob/master/gym/spaces/graph.py#L13
 '''
 
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-
 def create_distance_matrix():
 	distances = pd.read_csv(
 		'../data/travel_times/wien_travel_times.csv',
@@ -85,12 +81,6 @@ plt.hist(distances['duration'], bins=50)
 # https://github.com/openai/gym/blob/master/gym/spaces/graph.py#L13
 
 from typing import NamedTuple
-import gymnasium as gym
-import numpy as np
-
-from wien_graph import WienGraph
-from gymnasium.spaces import Tuple, MultiDiscrete, Dict, Graph, Discrete, GraphInstance
-
 
 
 class testClass(NamedTuple):
@@ -135,12 +125,12 @@ for place1 in range(len(picks)):
 
 
 import src.funcs as fn
-
-fn.create_distance_matrix()
-
+import numpy as np
+test = fn.create_distance_matrix()
+np.amax(test)
 
 import numpy as np
-from src.wien_graph import WienGraph
+from src.old.wien_graph import WienGraph
 test = np.array([*WienGraph().raw_output()], dtype=object)
 
 
@@ -148,10 +138,13 @@ testnode, testlen, testend = WienGraph(number_of_places=20).raw_output()
 test = np.c_[ testend, testlen ]
 
 
+
+
+
+
 from stable_baselines3.common.env_checker import check_env
 from src.wien_env import WienEnv
 
-# It will check your custom environment and output additional warnings if needed
 check_env(WienEnv())
 
 
