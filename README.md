@@ -5,9 +5,9 @@
 	Due 19th December 2023<br>
 </p>
 
-# Summary of results
+# Summary
 
-First of all, no results were achieved. The model was unable to deliver a package, though it seems to be an error with the implementation as even after 30+ minutes of iterations, not a single package has been delivered by chance. Many issues were encountered in the project, especially the creation of a custom gymnasium environment. The code to create & run a model is found in main.py, though there is most likely much tweaking needed before it accomplishes anything.
+The model was unfortunately unable to deliver a package, though it seems to be an error with the implementation as even after 30+ minutes of iterations, not a single package has been delivered by chance. Many issues were encountered in the project, especially the creation of a custom gymnasium environment. The code to create & run a model is found in main.py, though there is most likely much tweaking needed before it accomplishes anything.
 
 ## Changes from exercise 1
 
@@ -28,10 +28,13 @@ The error is infinity, as the model never accomplishes the task in any given tim
 
 ## * The amount of time you spent on each task, according to your own work breakdown
 
-> Acquiring data ~ 1 week of research & debugging to decide on proper data format
+Acquiring data ~ 1 week of research & debugging to decide on proper data format
+* one of the mistakes i realized i made was going into deep reinforcement learning with almost 0 knowledge of how it works
 
-> Building environment ~ 1 week. Many things took much longer than expected. I was hung up multiple times on strange errors. I spent a few days writing a Graph object for gymnasium spaces, but ultimate abandoned it due to errors. The code is still in /old/wien_graph.py
+Building environment ~ 1 week. Many things took much longer than expected. I was hung up multiple times on strange errors. 
+* Spent a few days writing a Graph object for gymnasium spaces, but ultimately abandoned it due to errors. The code is still in /old/wien_graph.py
+* Environment checker is very picky about the format of objects. I spent more time than expected getting everything to pass as a valid observation space. Furthermore, the errors were extremely hard to debug due to the complicated nature of spaces acting as a template while the instance values are held elsewhere
 
-> Defining action space ~ 1 day
+Defining action space ~ 1 day
 
-> Integrate into reinforcement learning model ~ 1 day, ran out of time
+Integrate into reinforcement learning model ~ 1 day, ran out of time

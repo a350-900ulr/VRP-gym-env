@@ -52,7 +52,7 @@ def multi_disc(amount: int, value_range: int, zero_as_none = False) -> MultiDisc
 	:param zero_as_none: Whether to shift the range of each Discrete object by 1 so that 0 represents the empty value. This is used by environment variables that could have a `None` value, such as when a vehicle contains no package.
 	:return: A `MultiDiscrete` object of shape (amount, value_range)
 	"""
-	from gymnasium.spaces import MultiDiscrete, Discrete
+	from gymnasium.spaces import MultiDiscrete
 	if zero_as_none:
 		return MultiDiscrete(filler(amount, value_range+1))
 	else:

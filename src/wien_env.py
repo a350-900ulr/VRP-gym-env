@@ -103,6 +103,10 @@ class WienEnv(gym.Env):
 		:param verbose: print out package location data
 		:return: dict { environment, info }
 		"""
+		info = {
+			'prev_time': self.clock,
+			'prev_trav': self.total_travel
+		}
 		self.clock = 0
 		self.total_travel = 0
 
@@ -143,9 +147,7 @@ class WienEnv(gym.Env):
 
 		return (
 			environment_object,
-			{  # extra info
-				'test': 'test'
-			}
+			info
 		)
 
 	def automate_packages(self):
