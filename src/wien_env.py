@@ -32,6 +32,8 @@ class WienEnv(gym.Env):
 		# initial values for environment itself. This will also be returned during self.step()
 		self.environment, _ = self.reset()
 
+		self.initial_package_distances = self.get_package_distances()
+
 		max_distance = np.amax(self.distance_matrix)  # 91
 
 		self.observation_space = Dict({
@@ -55,7 +57,7 @@ class WienEnv(gym.Env):
 		# possible values are in the range of the number of locations
 		self.action_space = MultiDiscrete(vehicle_count * [place_count])
 
-	def step(self, action) -> tuple[dict, int, bool, bool, dict[str, Any]]:
+	def step(self, action) -> tuple[dict, float, bool, bool, dict[str, Any]]:
 		"""
 		Run one timestep of the environment’s dynamics using the agent actions. First the vehicle location dispatch decisions are assigned to each vehicle where a dispatch is valid (the vehicle is available). When a vehicle is dispatched its remaining transit time is also calculated. Second each vehicle that is in transit is progressed by 1 unit.
 
@@ -86,7 +88,9 @@ class WienEnv(gym.Env):
 
 		return (
 			self.environment,
-			self.automate_packages(),  # drop off & pick up any packages
+			self.automate_packages() + (
+					(self.initial_package_distances - self.get_package_distances()) / 1000
+			),
 			all(self.environment['p_delivered']),
 			False,
 			{'time': self.clock},
@@ -145,7 +149,7 @@ class WienEnv(gym.Env):
 
 	def automate_packages(self):
 		"""
-		automatically pick up packages when vehicle passes over, automatically drop off at location
+		automatically pick up packages when vehicle passes over, automatically drop off at target location
 		:return: number of packages that have been delivered for reward function
 		"""
 		reward = 0
@@ -196,6 +200,12 @@ class WienEnv(gym.Env):
 
 		return reward
 
+	def get_package_distances(self):
+		distance = 0
+		for p, p_start in enumerate(self.environment['p_location_current']):
+			distance += self.distance_matrix[p_start][self.environment['p_location_target'][p]]
+		return distance
 
-#test = WienEnv(20).reset(verbose=True)
+
+#test = WienEnv().get_package_distances()
 

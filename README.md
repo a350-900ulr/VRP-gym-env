@@ -1,75 +1,37 @@
 <h1 style="text-align: center;" align="center">William Amminger</h1>
 <p style="text-align: center;" align="center">
 	194.077 Applied Deep Learning 2023W, VU, 2.0h, 3.0EC<br>
-	Assignment 1 - Initiate<br>
-	Due 24th October 2023<br>
+	Assignment 2 - Hacking<br>
+	Due 19th December 2023<br>
 </p>
 
-### 1. References to at least two scientific papers that are related to your topic
+# Summary of results
 
-> [Deep Reinforcement Learning for Solving the Heterogeneous Capacitated Vehicle Routing Problem](https://arxiv.org/abs/2110.02629)
+First of all, no results were achieved. The model was unable to deliver a package, though it seems to be an error with the implementation as even after 30+ minutes of iterations, not a single package has been delivered by chance. Many issues were encountered in the project, especially the creation of a custom gymnasium environment. The code to create & run a model is found in main.py, though there is most likely much tweaking needed before it accomplishes anything.
 
-> [DeepFreight: Integrating Deep Reinforcement Learning and Mixed Integer Programming for Multi-transfer Truck Freight Delivery ](https://paperswithcode.com/paper/deepfreight-a-model-free-deep-reinforcement)
+## Changes from exercise 1
 
-### 2. A decision of a topic of your choice
+The original exercise 1 describe a multi-modal environment with different vehicle types with their own capabilities. This has been simplified into a single mode: a bicycle. Besides complexity reduction, this was also done to reduce the amount of distance data that would be required for multiple modes. The physical space has also been moved to Vienna from a random environment, since the problem is no longer representing containers shipping. The end result is a distance matrix of bicycle travel time between many real places in Vienna. 
 
-> ****Implementation of Reinforcement Learning into the Vehicle Routing Problem (VRP), an extension of the Traveling Salesman Problem. This involves a fully connected graph of geographical points that must be visited by a fleet of vehicles in order to fulfill a set of deliveries. The optimization function is to minimize the number of vehicles used & the total fuel used (distance traveled) by all vehicles. Common constraints to the function typically resemble those found in real-world freight companies. Examples include the maximum capacity of a vehicle, the maximum distance it is allowed to travel at once, & priority of a parcel. Additionally, there are many variants of the problem which add additional parameters into the environment, such as a specific time window a parcel needs to be delivered, whether parcels can be transferred intermittedly between vehicles, & unloading times for dropping off a specific parcel based on its position in the vehicle.****
 
-### 3. A decision of which type of project you want to do
+## * The error metric you specified
 
-> This would be mainly a "Bring your own data" type of project. The dataset will be  a mix of generated geolocation data from the Google Maps API along with some randomized travel times & locations in aspects where real world data is not easy to automatically acquire.
+It was attempted to create an error metric of the amount of total time traveled by all vehicles. 
 
-### 4. A written summary that should contain:
+## * The target of that error metric that you want to achieve
 
-#### a. Short description of your project idea and the approach you intend to use
+The goal was to get this number to be the same as the sum of distances each package would be from its target destination. This would be the ideal case where no bike travels without making a delivery.
 
-> This project will be a simple variant of the VRP with parcels that exists at various points in an undirected graph, having an origin & destination. A fleet of vehicles will find a way to achieve all deliveries using the least of amount of resources possible.
+## * The actually achieved value of that metric
 
-> In this case, I would like to attempt creating a multi-modal system where there are many types of vehicles with different capabilities that are limited to paths which have the corresponding infrastructure for the vehicle. This is similar to real world container shipping, where modes of transportation requires the consideration of each mode's abilities. Thus, to keep modes competitive the amount of time required for parcels to be delivered will also be part of the cost function. The cost function can at first be a simple sum of (fuel used + time needed), with modifications later on to determine the effects.
+The error is infinity, as the model never accomplishes the task in any given timeframe.
 
-> For initial simplicity, a parcel will not have a weight, priority, or profit. The resulting setup also includes features from common variants of VRP, including
-> * **Capacitated Vehicles** that have a limited amount carrying space for parcels
-> * **Open Vehicle Routing** so that a vehicle does not have to return to a specific point
-> * **Pickup and Delivery** for each parcel, meaning that their origin & destination can be any location, or city in this implementation.
+## * The amount of time you spent on each task, according to your own work breakdown
 
-> To put this in a reinforcement learning structure, the basic components are defined as
-> * **Agent**: Shipping company that can allocate routes to vehicles
-> * **Environment**: Locations scattered geographically, with infrastructure existing between them for a set amount of vehicles
-> * **Action**: Set a target route for each vehicle
-> * **State**: The position of all vehicles
-> * **Reward**: Amount of parcels delivered
+> Acquiring data ~ 1 week of research & debugging to decide on proper data format
 
-#### b. Description of the dataset you are about to use (or collect)
+> Building environment ~ 1 week. Many things took much longer than expected. I was hung up multiple times on strange errors. I spent a few days writing a Graph object for gymnasium spaces, but ultimate abandoned it due to errors. The code is still in /old/wien_graph.py
 
-> The dataset will contain objects with their respective attributes described below:
-> * **Vehicle**: Capacity, Speed, Consumption, Max Distance
-> * **Depot**: Location
-> * **Parcel**: Origin, Destination, Size
-> * **Edge**: Distance (for each mode)
+> Defining action space ~ 1 day
 
-#### c. A work-breakdown structure for the individual tasks with time estimates (hours or days) for dataset collection; designing and building an appropriate network; training and fine-tuning that network; building an application to present the results; writing the final report; preparing the presentation of your work.
-
-> Oct. 24th - Start
-
-> Oct. 31st - Build environment (1 week)
-> * Collect data on each object
-> * Construct object into Python
-> * Define ability to generate missing information
-
-> Nov. 7th - Define company as agent & route assigning as action (1 week)
-> * Describe deployment of a vehicle as an input to a network
-> * Specify behaviors of vehicles acquiring, transferring, & delivering parcels
-
-> Nov. 14th - Integrate progress into a reinforcement learning model (2 weeks)
-> * Formulate cost function
-> * Create timing increments for vehicles to operate within
-
-> Nov. 28th - Train model & finish code (3 weeks)
-> * Fine-tune environment to provide interesting results
-> * Try different cost function weights
-> * Look into adding additional constraints
-> * Create visualization
-
-> Dec. 19th - Create report & presentation (4 weeks)
-
-> Jan. 16th - Finish
+> Integrate into reinforcement learning model ~ 1 day, ran out of time
