@@ -1,13 +1,11 @@
 # https://stable-baselines3.readthedocs.io/en/master/guide/custom_env.html
 import random
 from typing import Any
-
 import gymnasium as gym
 from gymnasium.spaces import MultiDiscrete, Dict, MultiBinary, Box
-
-
 from src.funcs import create_distance_matrix, filler, multi_disc
 import numpy as np
+
 
 class WienEnv(gym.Env):
 	metadata = {"render_modes": ["human"], "render_fps": 30}
@@ -94,7 +92,10 @@ class WienEnv(gym.Env):
 			),
 			all(self.environment['p_delivered']),
 			False,
-			{'time': self.clock},
+			{
+				'time': self.clock,
+				'trav': self.total_travel,
+			},
 		)
 
 	def reset(self, seed=None, verbose=False) -> tuple:
@@ -163,7 +164,10 @@ class WienEnv(gym.Env):
 			def pack_set(key, val): self.environment[key][p] = val
 
 			# set any packages to delivered if they are in their target location
-			if pack('p_location_current') == pack('p_location_target') and not pack('p_delivered'):
+			if (
+				pack('p_location_current') == pack('p_location_target') and
+				not pack('p_delivered')
+			):
 				pack_set('p_delivered', True)
 
 			# undelivered package currently not on a vehicle

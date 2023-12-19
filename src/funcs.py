@@ -1,5 +1,5 @@
 from typing import Any
-from gymnasium.spaces import MultiDiscrete, Discrete
+from gymnasium.spaces import MultiDiscrete
 
 
 def create_distance_matrix():

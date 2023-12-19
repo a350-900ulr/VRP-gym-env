@@ -11,8 +11,7 @@ The model was unfortunately unable to deliver a package, though it seems to be a
 
 ## Changes from exercise 1
 
-The original exercise 1 describe a multi-modal environment with different vehicle types with their own capabilities. This has been simplified into a single mode: a bicycle. Besides complexity reduction, this was also done to reduce the amount of distance data that would be required for multiple modes. The physical space has also been moved to Vienna from a random environment, since the problem is no longer representing containers shipping. The end result is a distance matrix of bicycle travel time between many real places in Vienna. 
-
+The original exercise 1 describe a multi-modal environment with different vehicle types with their own capabilities. This has been simplified into a single mode: a bicycle. Besides complexity reduction, this was also done to reduce the amount of distance data that would be required for multiple modes. The physical space has also been moved to Vienna from a random environment, since the problem is no longer representing containers shipping. The end result is a distance matrix of bicycle travel time between many real places in Vienna.
 
 ## * The error metric you specified + reward function
 
@@ -30,11 +29,13 @@ The error is infinity, as the model never accomplishes the task in any given tim
 
 Acquiring data ~ 1 week of research & debugging to decide on proper data format
 * one of the mistakes i realized i made was going into deep reinforcement learning with almost 0 knowledge of how it works
+* it took a while deciding what framework to use before deciding on stable baselines 3
 
-Building environment ~ 1 week. Many things took much longer than expected. I was hung up multiple times on strange errors. 
+Building environment ~ 1 week. Many things took much longer than expected. I was hung up multiple times on strange errors.
 * Spent a few days writing a Graph object for gymnasium spaces, but ultimately abandoned it due to errors. The code is still in /old/wien_graph.py
 * Environment checker is very picky about the format of objects. I spent more time than expected getting everything to pass as a valid observation space. Furthermore, the errors were extremely hard to debug due to the complicated nature of spaces acting as a template while the instance values are held elsewhere
+* In the original phase to indicate an empty value, such as a vehicle having no package, I used "None". Later on, environment spaces required numerical arrays so it was changed to -1. At a later point I learned that the environment space MultiDiscrete actually does not handle negative numbers, requiring a restructuring of how the environment space was constructed. 
 
 Defining action space ~ 1 day
 
-Integrate into reinforcement learning model ~ 1 day, ran out of time
+Integrate into reinforcement learning model ~ 1 day, but I ran out of time
