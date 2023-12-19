@@ -3,9 +3,8 @@ import random
 from typing import Any
 
 import gymnasium as gym
-from gymnasium.spaces import (
-	Tuple, MultiDiscrete, Dict, Graph, Discrete, GraphInstance, MultiBinary, Box
-)
+from gymnasium.spaces import MultiDiscrete, Dict, MultiBinary, Box
+
 
 from src.funcs import create_distance_matrix, filler, multi_disc
 import numpy as np
@@ -13,7 +12,7 @@ import numpy as np
 class WienEnv(gym.Env):
 	metadata = {"render_modes": ["human"], "render_fps": 30}
 
-	def __init__(self, place_count: int = 20, vehicle_count: int = 10, package_count: int = 10):
+	def __init__(self, place_count: int = 30, vehicle_count: int = 10, package_count: int = 10):
 		"""
 		Custom Environment that follows gym interface. This Wien Environment creates a space for the vehicle routing problem within specific places in vienna.
 		:param place_count: number of places to use, out of the 80 total
@@ -33,23 +32,24 @@ class WienEnv(gym.Env):
 		# initial values for environment itself. This will also be returned during self.step()
 		self.environment, _ = self.reset()
 
+		max_distance = np.amax(self.distance_matrix)  # 91
+
 		self.observation_space = Dict({
-			'distances': Box(low=0, high=91, shape=(80, 80), dtype=int),
-			'vehicles': Dict({
-				'id': multi_disc(*(2 * [vehicle_count+1])),
-				'availability': MultiBinary(vehicle_count),
-				'transit_start': multi_disc(vehicle_count, place_count),
-				'transit_end': multi_disc(vehicle_count, place_count, True),
-				'transit_remaining': multi_disc(vehicle_count, place_count),
-				'has_package': multi_disc(vehicle_count, package_count, True),
-			}),
-			'packages': Dict({
-				'id': multi_disc(*(2 * [package_count+1])),
-				'location_current': multi_disc(package_count, place_count),
-				'location_target':  multi_disc(package_count, place_count),
-				'carrying_vehicle': multi_disc(package_count, vehicle_count, True),
-				'delivered': MultiBinary(package_count),
-			}),
+			'distances': Box(low=0, high=max_distance, shape=(80, 80), dtype=int),
+
+			'v_id': multi_disc(vehicle_count, vehicle_count+1),
+			'v_available': MultiBinary(vehicle_count),
+			'v_transit_start': multi_disc(vehicle_count, place_count),
+			'v_transit_end': multi_disc(vehicle_count, place_count, True),
+			'v_transit_remaining': multi_disc(vehicle_count, max_distance),
+			'v_has_package': multi_disc(vehicle_count, package_count, True),
+
+			'p_id': multi_disc(package_count, package_count+1),
+			'p_location_current': multi_disc(package_count, place_count),
+			'p_location_target':  multi_disc(package_count, place_count),
+			'p_carrying_vehicle': multi_disc(package_count, vehicle_count, True),
+			'p_delivered': MultiBinary(package_count),
+
 		})
 
 		# possible values are in the range of the number of locations
@@ -67,27 +67,27 @@ class WienEnv(gym.Env):
 			assert dispatch_location in range(self.place_count)
 		self.clock += 1
 
-		for vehicle_decision, v in enumerate(action):
-			def vehi(key): return self.environment['vehicles'][key][v]
-			def vehi_set(key, val): self.environment['vehicles'][key][v] = val
+		for v, vehicle_decision in enumerate(action):
+			def vehi(key): return self.environment[key][v]
+			def vehi_set(key, val): self.environment[key][v] = val
 
-			if vehi('transit_remaining') == 0:
-				vehi_set('transit_end', vehicle_decision)
+			if vehi('v_transit_remaining') == 0:
+				vehi_set('v_transit_end', vehicle_decision)
 				vehi_set(
-					'transit_remaining',
-					self.distance_matrix[vehi('transit_start')][vehicle_decision]
+					'v_transit_remaining',
+					self.distance_matrix[vehi('v_transit_start')][vehicle_decision]
 				)
 
 		# progress each vehicle
 		for v in range(self.vehicle_count):
-			if self.environment['vehicles']['transit_remaining'][v] > 0:
-				self.environment['vehicles']['transit_remaining'][v] -= 1
+			if self.environment['v_transit_remaining'][v] > 0:
+				self.environment['v_transit_remaining'][v] -= 1
 				self.total_travel += 1
 
 		return (
 			self.environment,
 			self.automate_packages(),  # drop off & pick up any packages
-			self.all_delivered(),
+			all(self.environment['p_delivered']),
 			False,
 			{'time': self.clock},
 		)
@@ -103,40 +103,38 @@ class WienEnv(gym.Env):
 
 		environment_object = {
 			'distances': create_distance_matrix(),
-			'vehicles': {
-				'id': range(1, self.vehicle_count+1),
-				'available': filler(self.vehicle_count, True),
-				'transit_start': filler(
-					self.vehicle_count, self.place_count, True
-				),
-				'transit_end': filler(self.vehicle_count),
-				'transit_remaining': filler(self.vehicle_count, 0),
-				'has_package': filler(self.vehicle_count)
-			},
-			'packages': {
-				'id': range(1, self.package_count+1),
-				'location_current': filler(
-					self.package_count, self.place_count, True
-				),
-				'location_target': filler(self.package_count),
-				'carrying_vehicle': filler(self.package_count),
-				'delivered': filler(self.package_count, False)
-			},
+
+			'v_id': np.array(range(1, self.vehicle_count+1)),
+			'v_available': filler(self.vehicle_count, True),
+			'v_transit_start': filler(
+				self.vehicle_count, self.place_count, True
+			),
+			'v_transit_end': filler(self.vehicle_count),
+			'v_transit_remaining': filler(self.vehicle_count, 0),
+			'v_has_package': filler(self.vehicle_count),
+
+			'p_id': np.array(range(1, self.package_count+1)),
+			'p_location_current': filler(
+				self.package_count, self.place_count, True
+			),
+			'p_location_target': filler(self.package_count),
+			'p_carrying_vehicle': filler(self.package_count),
+			'p_delivered': filler(self.package_count, False)
 		}
 
 		if verbose:
 			print(
-				f"\ncurr: {len(environment_object['packages']['location_current'])}"
-				f"\ntarg: {len(environment_object['packages']['location_target'])}"
+				f"\ncurr: {len(environment_object['p_location_current'])}"
+				f"\ntarg: {len(environment_object['p_location_target'])}"
 			)
 
 		# fill target destinations with something other than their starting location
-		for p, place in enumerate(environment_object['packages']['location_current']):
+		for p, place in enumerate(environment_object['p_location_current']):
 			valid_values = list(range(self.place_count))
 			valid_values.remove(place)
 			if verbose:
 				print(f'\nindex: {p}')
-			environment_object['packages']['location_target'][p] = random.choice(valid_values)
+			environment_object['p_location_target'][p] = random.choice(valid_values)
 
 		return (
 			environment_object,
@@ -154,58 +152,49 @@ class WienEnv(gym.Env):
 		for p in range(self.package_count):
 
 			# helper functions to shorten navigation of the object environment dictionary
-			def pack(key): return self.environment['packages'][key][p]
-			def pack_set(key, val): self.environment['packages'][key][p] = val
+			def pack(key): return self.environment[key][p]
+			def pack_set(key, val): self.environment[key][p] = val
 
 			# set any packages to delivered if they are in their target location
-			if pack('location_current') == pack('location_target') and not pack('delivered'):
-				pack_set('delivered', True)
+			if pack('p_location_current') == pack('p_location_target') and not pack('p_delivered'):
+				pack_set('p_delivered', True)
 
 			# undelivered package currently not on a vehicle
-			if not pack('delivered') and pack('carrying_vehicle') == 0:
+			if not pack('p_delivered') and pack('p_carrying_vehicle') == 0:
 				# make sure vehicles fulfill any request at any location if possible
 				for v in range(self.vehicle_count):
-					def vehi(key): return self.environment['vehicles'][key][v]
-					def vehi_set(key, val): self.environment['vehicles'][key][v] = val
+					def vehi(key): return self.environment[key][v]
+					def vehi_set(key, val): self.environment[key][v] = val
 
 					# if an available vehicle passes by, pick up the package
-					if (vehi('available') and
-						vehi('transit_start') == pack('location_current') and
-						vehi('transit_remaining') == 0
+					if (vehi('v_available') and
+						vehi('v_transit_start') == pack('p_location_current') and
+						vehi('v_transit_remaining') == 0
 					):
-						vehi_set('available', False)
-						vehi_set('has_package', p)
-						pack_set('carrying_vehicle', v)
+						vehi_set('v_available', False)
+						vehi_set('v_has_package', p)
+						pack_set('p_carrying_vehicle', v)
 
 			# if a package is not delivered but on a vehicle, check if it has been delivered
-			elif not pack('delivered') and pack('carrying_vehicle') != 0:
+			elif not pack('p_delivered') and pack('p_carrying_vehicle') != 0:
 
 				# same helper functions as before, but now the index is its carrying vehicle
 				def vehi(key):
-					return self.environment['vehicles'][key][pack('carrying_vehicle')]
+					return self.environment[key][pack('p_carrying_vehicle')]
 				def vehi_set(key, val):
-					self.environment['vehicles'][key][pack('carrying_vehicle')] = val
+					self.environment[key][pack('p_carrying_vehicle')] = val
 
 				# check if package could be delivered
-				if (vehi('transit_start') == pack('location_target') and
-					vehi('transit_remaining') == 0
+				if (vehi('v_transit_start') == pack('p_location_target') and
+					vehi('v_transit_remaining') == 0
 				):
-					pack_set('carrying_vehicle', 0)
-					pack_set('delivered', True)
-					vehi_set('available', True)
-					vehi_set('has_package', 0)
+					pack_set('p_carrying_vehicle', 0)
+					pack_set('p_delivered', True)
+					vehi_set('v_available', True)
+					vehi_set('v_has_package', 0)
 					reward += 1
 
 		return reward
-
-	def all_delivered(self):
-		"""
-		Checks every `self.environment['packages']['delivered']`
-		"""
-		for p in range(self.package_count):
-			if not self.environment['packages']['delivered'][p]:
-				return False
-		return True
 
 
 #test = WienEnv(20).reset(verbose=True)

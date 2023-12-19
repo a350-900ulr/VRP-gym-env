@@ -37,10 +37,11 @@ def filler(amount: int, fill_with: Any = 0, random_int_up_to_fill: bool = False)
 	:return: list filled with specified values
 	"""
 	import random
+	import numpy as np
 	if random_int_up_to_fill:
-		return [random.randrange(fill_with) for _ in range(amount)]
+		return np.array([random.randrange(fill_with) for _ in range(amount)])
 	else:
-		return [fill_with for _ in range(amount)]
+		return np.array([fill_with for _ in range(amount)])
 
 
 def multi_disc(amount: int, value_range: int, zero_as_none = False) -> MultiDiscrete:
