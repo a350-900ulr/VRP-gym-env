@@ -45,3 +45,7 @@ Building environment ~ 1 week. Many things took much longer than expected. I was
 Defining action space ~ 1 day
 
 Integrate into reinforcement learning model ~ 1 day, but I ran out of time
+
+## Setup
+
+To install the necessary dependencies, use `pip install -r requirements.txt` in a python version 3.11 environment
