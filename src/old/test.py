@@ -138,14 +138,23 @@ testnode, testlen, testend = WienGraph(number_of_places=20).raw_output()
 test = np.c_[ testend, testlen ]
 
 
+arr1 = np.arange(4)
+arr2 = np.arange(5,7)
+arr3 = np.arange(7,12)
+
+array_of_arrays = np.array([arr1, arr2, arr3])
+array_of_arrays
+np.concatenate(array_of_arrays)
+
 
 
 
 
 from stable_baselines3.common.env_checker import check_env
-from src.wien_env import WienEnv
+#from src.wien_env import WienEnv
+from src.old.wien_env_graphtest import WienEnvGraph
 
-check_env(WienEnv())
+check_env(WienEnvGraph())
 
 
 

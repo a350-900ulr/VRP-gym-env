@@ -26,13 +26,13 @@ class WienGraph(Graph):
 		# indices of places to pick from
 		self.picks = random.sample(range(80), number_of_places) if randomize_places \
 			else range(number_of_places)
-		self.coordinates_file = '../../data/places/places.csv'
-		self.distances_file = '../../data/travel_times/wien_travel_times.csv'
+		self.coordinates_file = '../data/places/places.csv'
+		self.distances_file = '../data/travel_times/wien_travel_times.csv'
 
 	def get_node_coordinates(self) -> np.array:
 		"""
 		Generates the 1st required object 'nodes'.
-		:return: Distance table filtered by the chosen locations in `self.picks` & then by retaining only the longitude & latitude columns. Since there is no label column, the node is simply indicated by the row position.
+		:return: Distance table as an `np.array` filtered by the chosen locations in `self.picks` & then by retaining only the longitude & latitude columns. Since there is no label column, the node is simply indicated by the row position.
 		"""
 		distances = pd.read_csv(self.coordinates_file, sep=';')
 		return distances.iloc[self.picks][['latitude', 'longitude']].values
@@ -109,8 +109,7 @@ class WienGraph(Graph):
 		"""
 		Converts raw output data into :class:`GraphInstance` object
 		"""
-		nodes, edges, edge_links = self.raw_output()
-		return GraphInstance(nodes, edges, edge_links)
+		return GraphInstance(*self.raw_output())
 
 	def get_template(self) -> Graph:
 		"""
@@ -118,8 +117,19 @@ class WienGraph(Graph):
 		"""
 		return Graph(*self.template.values())
 
+	def get_instance(self) -> np.array:
+		"""
+		attempt to get the reset() function to return an correct object. The errors are in `wien_env_graphtest.py` on line 120
+		"""
+		# Graph(Box(16.2239, 48.274822, (20, 2), float32), Box(0.0, 33.0, (760, 3), float32))
+		nodes, lengths, ends = self.raw_output()
+		return np.array([ nodes, np.c_[ lengths, ends ] ])
+
+
 
 '''
+# debugging lines
+
 testnode, testlen, testend = WienGraph(number_of_places=20).raw_output()
 
 test = WienGraph().get_node_coordinates()
