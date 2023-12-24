@@ -1,6 +1,6 @@
 # adds coordinates & index to places
 
-inputFile = 'attractions.txt'  # name;address
+inputFile = '../attractions.txt'  # name;address
 outputFile = 'places.csv'  # index;name;address;latitude;longitude
 
 
@@ -8,7 +8,7 @@ import googlemaps
 import pandas as pd
 
 gmaps = googlemaps.Client(key=open('../api_key', 'r').readlines()[0])
-places = pd.read_csv('attractions.txt', sep=';')
+places = pd.read_csv(inputFile, sep=';')
 
 x, y = [], []
 
