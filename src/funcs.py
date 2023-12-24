@@ -24,7 +24,7 @@ def create_distance_matrix():
 					(distances['place1index'] == place1) &
 					(distances['place2index'] == place2)
 				]['duration'].values[0]
-			)]
+			) + 2]  # artificially increase all transit times by 2 to simulate loading times
 
 	return dist_matrix
 

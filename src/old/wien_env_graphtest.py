@@ -8,6 +8,7 @@ import numpy as np
 
 from src.old.wien_graph import WienGraph
 
+import time
 
 class WienEnvGraph(gym.Env):
 	metadata = {"render_modes": ["human"], "render_fps": 30}
@@ -66,6 +67,7 @@ class WienEnvGraph(gym.Env):
 		:return: observation, reward, terminated, truncated, info
 		"""
 		assert action.size == self.vehicle_count
+		#print(action)
 		for dispatch_location in action:
 			assert dispatch_location in range(self.place_count)
 		self.clock += 1
@@ -87,6 +89,8 @@ class WienEnvGraph(gym.Env):
 			if self.environment['v_transit_remaining'][v] > 0:
 				self.environment['v_transit_remaining'][v] -= 1
 				self.total_travel += 1
+		#print(self.environment)
+		#time.sleep(3)
 
 		return (
 			self.environment,

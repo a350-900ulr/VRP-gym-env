@@ -1,6 +1,6 @@
 # acquires the travel times between all places
 
-inputFile = '../places/attractions.txt'
+inputFile = '../attractions.txt'
 outputFile = 'wien_travel_times.csv'
 depart = '2023-06-14 11:00'  # set all queries to be at the same time of day so that the results are fair
 offset = [0, 0]  # incase it crashes before finishing, to continue writing to file

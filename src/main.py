@@ -32,5 +32,6 @@ if __name__ == '__main__':
 		while not done:
 			action, _states = model.predict(obs)
 			obs, reward, done, info = vec_env.step(action)
-			if 0 < reward: print(reward, end='')
+			#if 0 < reward: print(reward, end='')
 			vec_env.render("human")
+#%%

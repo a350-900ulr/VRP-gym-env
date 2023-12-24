@@ -5,12 +5,14 @@ import gymnasium as gym
 from gymnasium.spaces import MultiDiscrete, Dict, MultiBinary, Box
 from src.funcs import create_distance_matrix, filler, multi_disc
 import numpy as np
-
+import time
+from pprint import pprint
 
 class WienEnv(gym.Env):
-	metadata = {"render_modes": ["human"], "render_fps": 30}
 
-	def __init__(self, place_count: int = 30, vehicle_count: int = 10, package_count: int = 10):
+	def __init__(self,
+		place_count: int = 30, vehicle_count: int = 10, package_count: int = 10, verbose = True
+	):
 		"""
 		Custom Environment that follows gym interface. This Wien Environment creates a space for the vehicle routing problem within specific places in vienna.
 		:param place_count: number of places to use, out of the 80 total
@@ -26,6 +28,7 @@ class WienEnv(gym.Env):
 		self.package_count = package_count
 		self.total_travel = 0
 		self.distance_matrix = create_distance_matrix()
+		self.verbose = verbose
 
 		# initial values for environment itself. This will also be returned during self.step()
 		self.environment, _ = self.reset()
@@ -63,27 +66,50 @@ class WienEnv(gym.Env):
 		:return: observation, reward, terminated, truncated, info
 		"""
 		assert action.size == self.vehicle_count
+		if self.verbose: print(action)
 		for dispatch_location in action:
 			assert dispatch_location in range(self.place_count)
 		self.clock += 1
 
 		for v, vehicle_decision in enumerate(action):
+
+			# helper functions to shorten navigation of the object environment dictionary
 			def vehi(key): return self.environment[key][v]
 			def vehi_set(key, val): self.environment[key][v] = val
 
 			if vehi('v_transit_remaining') == 0:
-				vehi_set('v_transit_start', vehi('v_transit_end'))
-				vehi_set('v_transit_end', vehicle_decision)
-				vehi_set(
-					'v_transit_remaining',
-					self.distance_matrix[vehi('v_transit_start')][vehicle_decision]
-				)
+				if vehi('v_available'):
+					vehi_set('v_available', False)
+					vehi_set('v_transit_end', vehicle_decision)
+					vehi_set(
+						'v_transit_remaining',
+						self.distance_matrix[vehi('v_transit_start')][vehicle_decision]
+					)
+				else:
+					vehi_set('v_transit_start', vehi('v_transit_end'))
+					vehi_set('v_available', True)
 
 		# progress each vehicle
 		for v in range(self.vehicle_count):
 			if self.environment['v_transit_remaining'][v] > 0:
 				self.environment['v_transit_remaining'][v] -= 1
 				self.total_travel += 1
+
+		if self.verbose:
+			print('vehicle info:')
+			for v_info in [
+				'v_available', 'v_transit_start', 'v_transit_end', 'v_transit_remaining',
+				'v_has_package'
+			]:
+				print(f'\t{v_info}: {self.environment[v_info]}')
+			print('package info:')
+			for p_info in [
+				'p_location_current', 'p_location_target', 'p_carrying_vehicle',
+				'p_delivered'
+			]:
+				print(f'\t{p_info}: {self.environment[p_info]}')
+			# done?
+			#time.sleep(3)
 
 		return (
 			self.environment,
@@ -163,31 +189,48 @@ class WienEnv(gym.Env):
 			def pack(key): return self.environment[key][p]
 			def pack_set(key, val): self.environment[key][p] = val
 
-			# set any packages to delivered if they are in their target location
-			if (
-				pack('p_location_current') == pack('p_location_target') and
-				not pack('p_delivered')
-			):
-				pack_set('p_delivered', True)
+			# if a package is already delivered, there are no operations to be done
+			if pack('p_delivered'): continue
 
-			# undelivered package currently not on a vehicle
-			if not pack('p_delivered') and pack('p_carrying_vehicle') == 0:
-				# make sure vehicles fulfill any request at any location if possible
+			# if package is on a vehicle, make sure its location is updated
+			if pack('p_carrying_vehicle') != 0:
+				pack_set(
+					'p_location_current',
+					self.environment['v_transit_start'][pack('p_carrying_vehicle')]
+				)
+
+			# !! Code below is actually a dupicate of another function below
+			# set any packages to delivered if they are in their target location
+			# if (
+			# 	pack('p_location_current') == pack('p_location_target') and
+			# 	not pack('p_delivered')
+			# ):
+			# 	# remove package from vehicle
+			# 	self.environment['v_has_package'][pack('carrying_vehicle')] = 0
+			# 	pack_set('p_carrying_vehicle', 0)
+			#
+			# 	# deliver package
+			# 	pack_set('p_delivered', True)
+
+			# for any undelivered package currently not on a vehicle,
+			# make sure any empty vehicles fulfill the request
+			if pack('p_carrying_vehicle') == 0:
 				for v in range(self.vehicle_count):
 					def vehi(key): return self.environment[key][v]
 					def vehi_set(key, val): self.environment[key][v] = val
 
-					# if an available vehicle passes by, pick up the package
-					if (vehi('v_available') and
-						vehi('v_transit_start') == pack('p_location_current') and
-						vehi('v_transit_remaining') == 0
+					# if an empty vehicle passes by, pick up the package
+					if (
+						vehi('v_has_package') == 0 and
+						vehi('v_transit_end') == pack('p_location_current') and
+						vehi('v_transit_remaining') == 0  # vehicle is not moving
 					):
-						vehi_set('v_available', False)
+						#vehi_set('v_available', False)
 						vehi_set('v_has_package', p)
 						pack_set('p_carrying_vehicle', v)
 
 			# if a package is not delivered but on a vehicle, check if it has been delivered
-			elif not pack('p_delivered') and pack('p_carrying_vehicle') != 0:
+			else:
 
 				# same helper functions as before, but now the index is its carrying vehicle
 				def vehi(key):
@@ -196,12 +239,12 @@ class WienEnv(gym.Env):
 					self.environment[key][pack('p_carrying_vehicle')] = val
 
 				# check if package could be delivered
-				if (vehi('v_transit_start') == pack('p_location_target') and
+				if (vehi('v_transit_end') == pack('p_location_target') and
 					vehi('v_transit_remaining') == 0
 				):
 					pack_set('p_carrying_vehicle', 0)
 					pack_set('p_delivered', True)
-					vehi_set('v_available', True)
+					#vehi_set('v_available', True)
 					vehi_set('v_has_package', 0)
 					reward += 1
 
@@ -218,4 +261,3 @@ class WienEnv(gym.Env):
 
 
 #test = WienEnv().get_package_distances()
-
