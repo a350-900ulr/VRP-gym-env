@@ -1,10 +1,14 @@
 from typing import Any
 from gymnasium.spaces import MultiDiscrete
+import pandas as pd
+import numpy as np
 
-
-def create_distance_matrix():
-	import pandas as pd
-	import numpy as np
+def create_distance_matrix(buffer: int = 2) -> np.array:
+	"""
+	Uses the travel times file to generate a matrix of the distances between them, rounded to the nearest integer + 2
+	:param buffer: increase all values by a certain amount before assigning to matrix. The default value is 2 minutes as an approximate time it takes to pickup/unload a package
+	:return: numpy array of shape (80, 80)
+	"""
 
 	distances = pd.read_csv(
 		'../data/travel_times/wien_travel_times.csv',
@@ -24,17 +28,17 @@ def create_distance_matrix():
 					(distances['place1index'] == place1) &
 					(distances['place2index'] == place2)
 				]['duration'].values[0]
-			) + 2]  # artificially increase all transit times by 2 to simulate loading times
+			) + buffer]  # artificially increase all transit times to simulate loading times
 
 	return dist_matrix
 
 
-def filler(amount: int, fill_with: Any = 0, random_int_up_to_fill: bool = False):
+def filler(amount: int, fill_with: Any = 0, random_int_up_to_fill: bool = False) -> np.array:
 	"""
 	:param amount: length of list to return
-	:param fill_with: value to fill the list with, or in the case of randomization fill with a andom integer in range of [0, fill_with)
+	:param fill_with: value to fill the list with, or in the case of randomization fill with a random integer in range of [0, fill_with)
 	:param random_int_up_to_fill: choice to randomize an integer range
-	:return: list filled with specified values
+	:return: np array of shape (amount,)
 	"""
 	import random
 	import numpy as np

@@ -163,5 +163,13 @@ check_env(WienEnvGraph())
 
 
 
+v_infos = [
+	'v_available', 'v_transit_start', 'v_transit_end', 'v_transit_remaining',
+	'v_has_package'
+]
+p_infos = [
+	'p_location_current', 'p_location_target', 'p_carrying_vehicle',
+	'p_delivered'
+]
 
-
+test = v_infos + p_infos

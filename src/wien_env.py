@@ -5,8 +5,6 @@ import gymnasium as gym
 from gymnasium.spaces import MultiDiscrete, Dict, MultiBinary, Box
 from src.funcs import create_distance_matrix, filler, multi_disc
 import numpy as np
-import time
-from pprint import pprint
 
 class WienEnv(gym.Env):
 
@@ -14,7 +12,7 @@ class WienEnv(gym.Env):
 		place_count: int = 80, vehicle_count: int = 10, package_count: int = 10, verbose = False
 	):
 		"""
-		Custom Environment that follows gym interface. This Wien Environment creates a space for the vehicle routing problem within specific places in vienna.
+		Custom Environment that follows gym interface. This Wien Environment creates a space for the vehicle routing problem within specific places in vienna. Observation space & action are explained further in the docstring above the respective variable in the __init__ function
 		:param place_count: number of places to use, out of the 80 total
 
 		"""
@@ -40,7 +38,48 @@ class WienEnv(gym.Env):
 		# all attributes below are used by the environment
 		self.reward_range = (0, package_count)
 
+		'''
+		distances:
+			information of all location distances, regardless of how many locations end up
+			being used
+			
+		v_id:
+			never actually used anywhere, but to help see how the code is structured. 
+			Vehicles have an ID randing from [1, vehicle_count], as in other fields '0' 
+			indicates no vehicle
+		v_available:
+			whether the vehicle is available for a dispatch decision (to be sent to the next
+			location). This starts out as all true, & is set to false when a dispatch has been
+			received. Set back to true when vehicle has reached a location
+		v_transit_start:
+			if the vehicle is in transit, this indicates the origin. If a vehicle is not moving,
+			this simply indicates its position
+		v_transit_end:
+			if the vehicle is in transit, this indicates the target. If a vehicle is not moving,
+			this also simply indicates its position. When trying to get the current position
+			of a vehicle, this is used as it is more up to date than `v_transit_start`
+		v_transit_remaining:
+			integer indicating the remaining number of minutes before a vehicle reaches its
+			destination. This is decremented by 1 every `step()` if not already 0.
+		v_has_package:
+			ID of package contained in vehicle. 0 if none
+		
+		p_id:
+			same as v_id, only an indicator
+		p_location_current:
+			initialized as the origin location of a package. if this package is picked up by a
+			vehicle, it remains as the vehicles starting location until the destination is
+			reached. A package is delivered when this equals the target destination
+		p_location_target:
+			ID of the place that the package needs to be delivered to
+		p_carrying_vehicle:
+			ID of vehicle currently carrying package. 0 if none
+		p_delivered:
+			boolean to act as a shorthand for p_location_current == p_location_target
+		'''
 		self.observation_space = Dict({
+			# information of all location distances, regardless of how many locations end up
+			# being used
 			'distances': Box(low=0, high=max_distance, shape=(80, 80), dtype=int),
 
 			'v_id': multi_disc(vehicle_count, vehicle_count+1),
@@ -80,6 +119,13 @@ class WienEnv(gym.Env):
 			def vehi_set(key, val): self.environment[key][v] = val
 
 			if vehi('v_transit_remaining') == 0:
+				'''
+				this if else block creates an intermediary pause between a vehicle reaching its
+				destination & being dispatched to the next location, allowing
+				`self.automate_packages()` enough time to make any vehicle deliver/pickup any
+				packages before the vehicle leaves
+				'''
+
 				if vehi('v_available'):
 					vehi_set('v_available', False)
 					vehi_set('v_transit_end', vehicle_decision)
@@ -97,34 +143,40 @@ class WienEnv(gym.Env):
 				self.environment['v_transit_remaining'][v] -= 1
 				self.total_travel += 1
 
+		# relevant columns to use in verbose setting & return variable 'info'
+		v_infos = [
+			'v_available', 'v_transit_start', 'v_transit_end', 'v_transit_remaining',
+			'v_has_package'
+		]
+		p_infos = [
+			'p_location_current', 'p_location_target', 'p_carrying_vehicle',
+			'p_delivered'
+		]
+
 		if self.verbose:
 			print('vehicle info:')
-			for v_info in [
-				'v_available', 'v_transit_start', 'v_transit_end', 'v_transit_remaining',
-				'v_has_package'
-			]:
+			for v_info in v_infos:
 				print(f'\t{v_info}: {self.environment[v_info]}')
 			print('package info:')
-			for p_info in [
-				'p_location_current', 'p_location_target', 'p_carrying_vehicle',
-				'p_delivered'
-			]:
+			for p_info in p_infos:
 				print(f'\t{p_info}: {self.environment[p_info]}')
 			# done?
 			#time.sleep(3)
 
+		info = {
+			'time': self.clock,
+			'total_travel': self.total_travel,
+		}
+
+		for key in v_infos + p_infos:
+			info[key] = self.environment[key]
+
 		return (
 			self.environment,
-			self.automate_packages(),# + (
-					#(self.initial_package_distances - self.get_package_distances()) / 1000
-			#),
+			self.automate_packages(),
 			all(self.environment['p_delivered']),
 			False,
-			{
-				'time': self.clock,
-				'total_travel': self.total_travel,
-				#'delivered_count': sum(self.environment['p_delivered'])
-			},
+			info
 		)
 
 	def reset(self, seed=None, verbose=False) -> tuple:
