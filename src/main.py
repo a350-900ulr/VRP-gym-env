@@ -1,6 +1,3 @@
-# TODO: create datetime in file name, actually train model
-
-
 train = True  # run the model.learn() function & save the weights
 test = False  # use the model to run an episode
 
@@ -16,14 +13,9 @@ environment_kwargs = {
 # model to write if train is true, model to load if train is false
 model_name = f'ppo_vrp_e{environment_count}-t{training_timesteps}'
 
-'''
-https://stackoverflow.com/questions/46422845/what-is-the-way-to-understand-proximal-policy-optimization-algorithm-in-rl#50663200
-'''
-
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from src.wien_env import WienEnv
-from tqdm import tqdm
 import numpy as np
 
 if __name__ == '__main__':
@@ -41,17 +33,14 @@ if __name__ == '__main__':
 		done = [False for _ in range(environment_count)]
 
 		previous_reward = 0
-		#pbar = tqdm(total=environment_kwargs['package_count'] * environment_count)
-		while not all(list(done)):
 
+		while not all(list(done)):
 			action, _states = model.predict(obs)
 			obs, reward, done, info = vec_env.step(action)
 			# update progress
 			if previous_reward < (current_reward := np.sum(reward)):
 				print(reward, end='\n' if current_reward % 10 == 0 else '')
 				previous_reward = current_reward
-			#vec_env.render()
-			#pbar.update(np.sum(reward))
-		#pbar.close()
+
 		print(info)
 
