@@ -2,7 +2,7 @@ train = False  # run the model.learn() function & save the weights
 test = True  # use the model to run an episode
 
 environment_count = 1  # number of simultaneous environments to train on
-training_timesteps = 40_000
+training_timesteps = 50
 environment_kwargs = {
 	'place_count': 30,
 	'vehicle_count': 10,

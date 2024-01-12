@@ -3,11 +3,12 @@ from gymnasium.spaces import MultiDiscrete
 import pandas as pd
 import numpy as np
 
-def create_distance_matrix(buffer: int = 2) -> np.array:
+def create_distance_matrix(env_places: int = 20, buffer: int = 2) -> np.array:
 	"""
 	Uses the travel times file to generate a matrix of the distances between them, rounded to the nearest integer + 2
+	:param env_places: specified number of places in the environment
 	:param buffer: increase all values by a certain amount before assigning to matrix. The default value is 2 minutes as an approximate time it takes to pickup/unload a package
-	:return: numpy array of shape (80, 80)
+	:return: numpy array of shape (env_places, env_places)
 	"""
 
 	distances = pd.read_csv(
@@ -18,12 +19,19 @@ def create_distance_matrix(buffer: int = 2) -> np.array:
 
 	distances = distances[distances['mode'] == 'bicycling']
 
-	dist_matrix = np.zeros((80, 80), dtype=int)
+	"""
+	Dimensions have +1 appended to have the 0th row/column be blank. This is to keep in line 
+	with the environment, where dispatching to place 0 indicates the vehicle should not move yet
+	"""
+	dist_matrix = np.zeros((env_places+1, env_places+1), dtype=int)
 
-	for place1 in range(80):
-		for place2 in range(place1+1, 80):
-			# set both values on both sides of the diagonal
-			dist_matrix[place1, place2], dist_matrix[place2, place1] = 2 * [round(
+	for place1 in range(env_places):
+		for place2 in range(place1+1, env_places):
+			"""
+			This sets the values on both sides of the diagonal, thus it is mirrored.
+			The indices here are also offset by +1 as explained in the previous block comment.
+			"""
+			dist_matrix[place1+1, place2+1], dist_matrix[place2+1, place1+1] = 2 * [round(
 				distances[
 					(distances['place1index'] == place1) &
 					(distances['place2index'] == place2)
@@ -43,7 +51,8 @@ def filler(amount: int, fill_with: Any = 0, random_int_up_to_fill: bool = False)
 	import random
 	import numpy as np
 	if random_int_up_to_fill:
-		return np.array([random.randrange(fill_with) for _ in range(amount)])
+		# starts at one for generating random place locations in the environment
+		return np.array([random.randrange(1, fill_with) for _ in range(amount)])
 	else:
 		return np.array([fill_with for _ in range(amount)])
 
