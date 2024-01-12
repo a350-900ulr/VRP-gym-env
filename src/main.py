@@ -1,5 +1,5 @@
-train = True  # run the model.learn() function & save the weights
-test = False  # use the model to run an episode
+train = False  # run the model.learn() function & save the weights
+test = True  # use the model to run an episode
 
 environment_count = 1  # number of simultaneous environments to train on
 training_timesteps = 40_000

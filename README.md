@@ -48,4 +48,4 @@ Integrate into reinforcement learning model ~ 1 day, but I ran out of time
 
 ## Setup
 
-To install the necessary dependencies, use `pip install -r requirements.txt` in a python version 3.12 environment
+To install the necessary dependencies, use `pip install -r requirements.txt` in a python version 3.11 environment
