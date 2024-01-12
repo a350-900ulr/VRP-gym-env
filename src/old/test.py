@@ -181,3 +181,10 @@ test = v_infos + p_infos
 
 from src.funcs import create_distance_matrix
 test = create_distance_matrix(20)
+
+
+
+def tester(a, b):
+	print(a, b)
+
+tester(*([5] * 2))

@@ -22,8 +22,8 @@ class WienEnv(gym.Env):
 		super().__init__()
 
 		self.place_count = place_count + 1
-		self.vehicle_count = vehicle_count
-		self.package_count = package_count
+		self.vehicle_count = vehicle_count + 1
+		self.package_count = package_count + 1
 		self.clock = 0  # total time the episode has been running
 		self.total_travel = 0  # sum of all distance traveled by all vehicles
 		self.distance_matrix = create_distance_matrix(place_count)
@@ -86,18 +86,18 @@ class WienEnv(gym.Env):
 				dtype = int
 			),
 
-			'v_id': multi_disc(vehicle_count, vehicle_count+1),
-			'v_available': MultiBinary(vehicle_count),
-			'v_transit_start': multi_disc(vehicle_count, self.place_count),
-			'v_transit_end': multi_disc(vehicle_count, self.place_count, True),
-			'v_transit_remaining': multi_disc(vehicle_count, max_distance),
-			'v_has_package': multi_disc(vehicle_count, package_count, True),
+			'v_id': MultiDiscrete(filler(self.vehicle_count, self.vehicle_count)),
+			'v_available': MultiBinary(self.vehicle_count),
+			'v_transit_start': MultiDiscrete(filler(self.vehicle_count, self.place_count)),
+			'v_transit_end': MultiDiscrete(filler(self.vehicle_count, self.place_count)),
+			'v_transit_remaining': MultiDiscrete(filler(self.vehicle_count, max_distance)),
+			'v_has_package': MultiDiscrete(filler(self.vehicle_count, self.package_count)),
 
-			'p_id': multi_disc(package_count, package_count+1),
-			'p_location_current': multi_disc(package_count, self.place_count),
-			'p_location_target':  multi_disc(package_count, self.place_count),
-			'p_carrying_vehicle': multi_disc(package_count, vehicle_count, True),
-			'p_delivered': MultiBinary(package_count),
+			'p_id': MultiDiscrete(filler(self.package_count, self.package_count)),
+			'p_location_current': MultiDiscrete(filler(self.package_count, self.place_count)),
+			'p_location_target':  MultiDiscrete(filler(self.package_count, self.place_count)),
+			'p_carrying_vehicle': MultiDiscrete(filler(self.package_count, self.vehicle_count)),
+			'p_delivered': MultiBinary(self.package_count),
 		})
 
 		# possible values are in the range of the number of locations
@@ -110,13 +110,13 @@ class WienEnv(gym.Env):
 		:param action: place for each vehicle to go to in the format MultiDiscrete(vehicle_count * [place_count])
 		:return: observation, reward, terminated, truncated, info
 		"""
-		assert action.size == self.vehicle_count
+
 		if self.verbose: print(action)
 		for dispatch_location in action:
 			assert dispatch_location in range(self.place_count)
 		self.clock += 1
 
-		for v, vehicle_decision in enumerate(action):
+		for v, vehicle_decision in enumerate(action, start=1):
 
 			# helper functions to shorten navigation of the object environment dictionary
 			def vehi(key): return self.environment[key][v]
@@ -199,7 +199,7 @@ class WienEnv(gym.Env):
 		environment_object = {
 			'distances': self.distance_matrix,
 
-			'v_id': np.array(range(1, self.vehicle_count+1)),
+			'v_id': np.array(range(self.vehicle_count)),
 			'v_available': filler(self.vehicle_count, True),
 			'v_transit_start': filler(
 				self.vehicle_count, self.place_count, True
@@ -208,7 +208,7 @@ class WienEnv(gym.Env):
 			'v_transit_remaining': filler(self.vehicle_count, 0),
 			'v_has_package': filler(self.vehicle_count),
 
-			'p_id': np.array(range(1, self.package_count+1)),
+			'p_id': np.array(range(self.package_count)),
 			'p_location_current': filler(
 				self.package_count, self.place_count, True
 			),
@@ -233,6 +233,9 @@ class WienEnv(gym.Env):
 				print(f'\nindex: {p}')
 			environment_object['p_location_target'].append(random.choice(valid_values))
 
+		# set delivered status of 0 package to true
+		environment_object['p_delivered'][0] = True
+
 		return (
 			environment_object,
 			info
@@ -240,11 +243,11 @@ class WienEnv(gym.Env):
 
 	def automate_packages(self):
 		"""
-		automatically pick up packages when vehicle passes over, automatically drop off at target location
+		automatically pick up packages when vehicle passes over & automatically drop off at target location
 		:return: number of packages that have been delivered for reward function
 		"""
 
-		for p in range(self.package_count):
+		for p in range(1, self.package_count):
 
 			# helper functions to shorten navigation of the object environment dictionary
 			def pack(key): return self.environment[key][p]
@@ -263,7 +266,7 @@ class WienEnv(gym.Env):
 			# for any undelivered package currently not on a vehicle,
 			# make sure any empty vehicles fulfill the request
 			if pack('p_carrying_vehicle') == 0:
-				for v in range(self.vehicle_count):
+				for v in range(1, self.vehicle_count):
 					def vehi(key): return self.environment[key][v]
 					def vehi_set(key, val): self.environment[key][v] = val
 
@@ -292,7 +295,6 @@ class WienEnv(gym.Env):
 				):
 					pack_set('p_carrying_vehicle', 0)
 					pack_set('p_delivered', True)
-					#vehi_set('v_available', True)
 					vehi_set('v_has_package', 0)
 
 		return sum(self.environment['p_delivered'])
