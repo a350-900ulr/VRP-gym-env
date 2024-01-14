@@ -32,12 +32,32 @@ class WienEnv(gym.Env):
 		# initial values for environment itself. This will also be returned during self.step()
 		self.environment, _ = self.reset()
 
-		# for observation space dimensions
-		max_distance = np.amax(self.distance_matrix)  # -> 91 in full matrix w/o buffer
-
 		# all attributes below are used by the environment
-		self.reward_range = (0, package_count)
+		self.reward_range = (1, self.package_count)
 
+		self.observation_space = Dict({
+			# information of all location distances, regardless of how many locations end up
+			# being used
+			'distances': Box(
+				low = 0,
+				high = np.amax(self.distance_matrix),  # -> 91 in full matrix w/o buffer
+				shape = (self.place_count, self.place_count),
+				dtype = int
+			),
+
+			'v_id': MultiDiscrete(filler(self.vehicle_count, self.vehicle_count)),
+			'v_available': MultiBinary(self.vehicle_count),
+			'v_transit_start': MultiDiscrete(filler(self.vehicle_count, self.place_count)),
+			'v_transit_end': MultiDiscrete(filler(self.vehicle_count, self.place_count)),
+			'v_transit_remaining': MultiDiscrete(filler(self.vehicle_count, max_distance)),
+			'v_has_package': MultiDiscrete(filler(self.vehicle_count, self.package_count)),
+
+			'p_id': MultiDiscrete(filler(self.package_count, self.package_count)),
+			'p_location_current': MultiDiscrete(filler(self.package_count, self.place_count)),
+			'p_location_target':  MultiDiscrete(filler(self.package_count, self.place_count)),
+			'p_carrying_vehicle': MultiDiscrete(filler(self.package_count, self.vehicle_count)),
+			'p_delivered': MultiBinary(self.package_count),
+		})
 		'''
 		distances:
 			information of all location distances
@@ -76,29 +96,6 @@ class WienEnv(gym.Env):
 		p_delivered:
 			boolean to act as a shorthand for p_location_current == p_location_target
 		'''
-		self.observation_space = Dict({
-			# information of all location distances, regardless of how many locations end up
-			# being used
-			'distances': Box(
-				low = 0,
-				high = max_distance,
-				shape = (self.place_count, self.place_count),
-				dtype = int
-			),
-
-			'v_id': MultiDiscrete(filler(self.vehicle_count, self.vehicle_count)),
-			'v_available': MultiBinary(self.vehicle_count),
-			'v_transit_start': MultiDiscrete(filler(self.vehicle_count, self.place_count)),
-			'v_transit_end': MultiDiscrete(filler(self.vehicle_count, self.place_count)),
-			'v_transit_remaining': MultiDiscrete(filler(self.vehicle_count, max_distance)),
-			'v_has_package': MultiDiscrete(filler(self.vehicle_count, self.package_count)),
-
-			'p_id': MultiDiscrete(filler(self.package_count, self.package_count)),
-			'p_location_current': MultiDiscrete(filler(self.package_count, self.place_count)),
-			'p_location_target':  MultiDiscrete(filler(self.package_count, self.place_count)),
-			'p_carrying_vehicle': MultiDiscrete(filler(self.package_count, self.vehicle_count)),
-			'p_delivered': MultiBinary(self.package_count),
-		})
 
 		# possible values are in the range of the number of locations
 		self.action_space = MultiDiscrete(vehicle_count * [self.place_count])
@@ -112,12 +109,13 @@ class WienEnv(gym.Env):
 		"""
 
 		if self.verbose: print(action)
+
 		for dispatch_location in action:
 			assert dispatch_location in range(self.place_count)
+
 		self.clock += 1
 
 		for v, vehicle_decision in enumerate(action, start=1):
-
 			# helper functions to shorten navigation of the object environment dictionary
 			def vehi(key): return self.environment[key][v]
 			def vehi_set(key, val): self.environment[key][v] = val
