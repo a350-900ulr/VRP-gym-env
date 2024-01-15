@@ -1,17 +1,20 @@
 ## Main options
-train = True  # run the model.learn() function & save the weights
+train = False  # run the model.learn() function & save the weights
 test = True  # use the model to run an episode
 
 ## Training options
 environment_count = 1  # number of simultaneous environments to train on
-training_timesteps = 10_000
+training_timesteps = 10_000  # total number of samples (env steps) to train on
 
 ## Environment options
 environment_options = {
 	'place_count': 30,
 	'vehicle_count': 10,
 	'package_count': 10,
-	'verbose': False
+	'verbose': True,  # print out vehicle & package info during each `step()`
+	# if verbose is False, activate verbosity anyway after this many steps.
+	# this is useful if the model gets stuck.
+	'verbose_trigger': 100_000
 }
 
 # model to write if train is true, model to load if train is false
@@ -28,6 +31,7 @@ if __name__ == '__main__':
 	vec_env = make_vec_env(WienEnv, n_envs=environment_count, env_kwargs=environment_options)
 
 	if train:
+		print('training...')
 		model = PPO('MultiInputPolicy', vec_env, verbose=1)
 		model.learn(total_timesteps=training_timesteps)
 		model.save(model_name)
@@ -48,6 +52,7 @@ if __name__ == '__main__':
 			obs, reward, done, info = vec_env.step(action)
 			# update progress
 			if previous_reward < (current_reward := np.sum(reward)):
-				print(reward, end='\n' if current_reward % 10 == 0 else '')
+
+				#print(f'{str(reward):<10}', end='\n' if current_reward % 10 == 0 else '')
 				previous_reward = current_reward
 		print(info)

@@ -2,6 +2,7 @@ from typing import Any
 from gymnasium.spaces import MultiDiscrete
 import pandas as pd
 import numpy as np
+import random
 
 def create_distance_matrix(env_places: int = 20, buffer: int = 2) -> np.array:
 	"""
@@ -41,20 +42,30 @@ def create_distance_matrix(env_places: int = 20, buffer: int = 2) -> np.array:
 	return dist_matrix
 
 
-def filler(amount: int, fill_with: Any = 0, random_int_up_to_fill: bool = False) -> np.array:
+def filler(
+		amount: int, fill_with: Any = 0, random_int_up_to_fill: bool = False,
+		zero_at_start = False
+) -> np.array:
 	"""
 	:param amount: length of list to return
 	:param fill_with: value to fill the list with, or in the case of randomization fill with a random integer in range of [0, fill_with)
 	:param random_int_up_to_fill: choice to randomize an integer range
+	:param zero_at_start: whether to replace the 1st value with a 0
 	:return: np array of shape (amount,)
 	"""
-	import random
-	import numpy as np
+
 	if random_int_up_to_fill:
 		# starts at one for generating random place locations in the environment
-		return np.array([random.randrange(1, fill_with) for _ in range(amount)])
+		result = np.array([random.randrange(1, fill_with) for _ in range(amount)])
 	else:
-		return np.array([fill_with for _ in range(amount)])
+		result = np.array([fill_with for _ in range(amount)])
+
+	if zero_at_start:
+		result[0] = 0
+
+	return result
+
+
 
 
 def multi_disc(amount: int, value_range: int, zero_as_none = False) -> MultiDiscrete:

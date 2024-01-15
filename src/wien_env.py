@@ -7,10 +7,11 @@ from src.funcs import create_distance_matrix, filler, multi_disc
 import numpy as np
 import time
 
-class WienEnv(gym.Env):
 
+class WienEnv(gym.Env):
 	def __init__(self,
-		place_count: int = 80, vehicle_count: int = 10, package_count: int = 10, verbose = False
+		place_count: int = 80, vehicle_count: int = 10, package_count: int = 10,
+		verbose: bool = False, verbose_trigger: int = 100_000
 	):
 		"""
 		Custom Environment that follows gym interface. This Wien Environment creates a space for the vehicle routing problem within specific places in vienna. Observation space & action are explained further in the docstring above the respective variable in the __init__ function
@@ -28,6 +29,7 @@ class WienEnv(gym.Env):
 		self.total_travel = 0  # sum of all distance traveled by all vehicles
 		self.distance_matrix = create_distance_matrix(place_count)
 		self.verbose = verbose
+		self.verbose_trigger = verbose_trigger
 
 		# initial values for environment itself. This will also be returned during self.step()
 		self.environment, _ = self.reset()
@@ -49,7 +51,9 @@ class WienEnv(gym.Env):
 			'v_available': MultiBinary(self.vehicle_count),
 			'v_transit_start': MultiDiscrete(filler(self.vehicle_count, self.place_count)),
 			'v_transit_end': MultiDiscrete(filler(self.vehicle_count, self.place_count)),
-			'v_transit_remaining': MultiDiscrete(filler(self.vehicle_count, max_distance)),
+			'v_transit_remaining': MultiDiscrete(filler(
+				self.vehicle_count, np.amax(self.distance_matrix)
+			)),
 			'v_has_package': MultiDiscrete(filler(self.vehicle_count, self.package_count)),
 
 			'p_id': MultiDiscrete(filler(self.package_count, self.package_count)),
@@ -108,7 +112,14 @@ class WienEnv(gym.Env):
 		:return: observation, reward, terminated, truncated, info
 		"""
 
-		if self.verbose: print(action)
+		if not self.verbose and self.clock > self.verbose_trigger:
+			self.verbose = True
+			print(
+				f'Clock ({self.clock} has exceeded limit {self.verbose_trigger} '
+				f'set by verbose trigger. Verbosity is now enabled'
+			)
+
+		if self.verbose: print(f'{action}{"-"*32}')
 
 		for dispatch_location in action:
 			assert dispatch_location in range(self.place_count)
@@ -163,7 +174,7 @@ class WienEnv(gym.Env):
 			print('package info:')
 			for p_info in p_infos:
 				print(f'\t{p_info}: {self.environment[p_info]}')
-			#time.sleep(3)
+			time.sleep(.1)
 
 		info = {
 			'time': self.clock,
@@ -200,7 +211,7 @@ class WienEnv(gym.Env):
 			'v_id': np.array(range(self.vehicle_count)),
 			'v_available': filler(self.vehicle_count, True),
 			'v_transit_start': filler(
-				self.vehicle_count, self.place_count, True
+				self.vehicle_count, self.place_count, True, True
 			),
 			'v_transit_end': filler(self.vehicle_count),
 			'v_transit_remaining': filler(self.vehicle_count, 0),
@@ -208,11 +219,11 @@ class WienEnv(gym.Env):
 
 			'p_id': np.array(range(self.package_count)),
 			'p_location_current': filler(
-				self.package_count, self.place_count, True
+				self.package_count, self.place_count, True, True
 			),
 			# the target location will be generated later in the code to make sure it is not
 			# the same as the starting location (location_current)
-			'p_location_target': [],
+			'p_location_target': [0],
 			'p_carrying_vehicle': filler(self.package_count),
 			'p_delivered': filler(self.package_count, False)
 		}
@@ -224,7 +235,7 @@ class WienEnv(gym.Env):
 			)
 
 		# fill target destinations with something other than their starting location
-		for p in range(self.package_count):
+		for p in range(1, self.package_count):
 			valid_values = list(range(1, self.place_count))
 			valid_values.remove(environment_object['p_location_current'][p])
 			if verbose:
@@ -307,4 +318,4 @@ class WienEnv(gym.Env):
 		return distance
 
 
-#test = WienEnv().get_package_distances()
+test = WienEnv().reset()
