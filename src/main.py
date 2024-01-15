@@ -54,5 +54,6 @@ if __name__ == '__main__':
 			if previous_reward < (current_reward := np.sum(reward)):
 
 				#print(f'{str(reward):<10}', end='\n' if current_reward % 10 == 0 else '')
+				print(reward)
 				previous_reward = current_reward
 		print(info)
