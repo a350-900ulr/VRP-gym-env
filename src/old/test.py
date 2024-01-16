@@ -253,3 +253,20 @@ while running:
 	dt = clock.tick(60) / 1000
 
 pygame.quit()
+
+
+
+
+
+
+
+
+
+
+
+import sys
+sys.path.append('..')
+from src.wien_env import WienEnv
+
+from src.visualizer import Visualizer
+env = WienEnv().reset()

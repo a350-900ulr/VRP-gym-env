@@ -31,8 +31,8 @@ class WienEnv(gym.Env):
 		self.verbose = verbose
 		self.verbose_trigger = verbose_trigger
 
-		# initial values for environment itself. This will also be returned during self.step()
-		self.environment, _ = self.reset()
+		# initial values for environment itself. This is also used during self.step()
+		self.environment = self.reset()[0]
 
 		# all attributes below are used by the environment
 		self.reward_range = (1, self.package_count)
@@ -157,39 +157,12 @@ class WienEnv(gym.Env):
 				self.environment['v_transit_remaining'][v] -= 1
 				self.total_travel += 1
 
-		# relevant columns to use in verbose setting & return variable 'info'
-		v_infos = [
-			'v_available', 'v_transit_start', 'v_transit_end', 'v_transit_remaining',
-			'v_has_package'
-		]
-		p_infos = [
-			'p_location_current', 'p_location_target', 'p_carrying_vehicle',
-			'p_delivered'
-		]
-
-		if self.verbose:
-			print('vehicle info:')
-			for v_info in v_infos:
-				print(f'\t{v_info}: {self.environment[v_info]}')
-			print('package info:')
-			for p_info in p_infos:
-				print(f'\t{p_info}: {self.environment[p_info]}')
-			time.sleep(.1)
-
-		info = {
-			'time': self.clock,
-			'total_travel': self.total_travel,
-		}
-
-		for key in v_infos + p_infos:
-			info[key] = self.environment[key]
-
 		return (
 			self.environment,
 			self.automate_packages(),
 			all(self.environment['p_delivered']),
 			False,
-			info
+			self.get_info()
 		)
 
 	def reset(self, seed=None, verbose=False) -> tuple:
@@ -198,12 +171,7 @@ class WienEnv(gym.Env):
 		:param verbose: print out package location data
 		:return: dict { environment, info }
 		"""
-		info = {
-			'prev_time': self.clock,
-			'prev_trav': self.total_travel
-		}
-		self.clock = 0
-		self.total_travel = 0
+
 
 		environment_object = {
 			'distances': self.distance_matrix,
@@ -247,7 +215,10 @@ class WienEnv(gym.Env):
 
 		return (
 			environment_object,
-			info
+			{
+				self.clock,
+				self.total_travel
+			}
 		)
 
 	def automate_packages(self):
@@ -317,5 +288,36 @@ class WienEnv(gym.Env):
 			distance += self.distance_matrix[p_start][self.environment['p_location_target'][p]]
 		return distance
 
+	def get_info(self):
+		v_infos = [
+			'v_available', 'v_transit_start', 'v_transit_end', 'v_transit_remaining',
+			'v_has_package'
+		]
+		p_infos = [
+			'p_location_current', 'p_location_target', 'p_carrying_vehicle',
+			'p_delivered'
+		]
+		print(self.environment['v_id'])
 
-test = WienEnv().reset()
+		if self.verbose:
+			print('vehicle info:')
+			for v_info in v_infos:
+				print(f'\t{v_info}: {self.environment[v_info]}')
+			print('package info:')
+			for p_info in p_infos:
+				print(f'\t{p_info}: {self.environment[p_info]}')
+			time.sleep(.1)
+
+		info_dict = {
+			'time': self.clock,
+			'total_travel': self.total_travel,
+		}
+
+		for key in v_infos + p_infos:
+			info_dict[key] = self.environment[key]
+
+		return info_dict
+
+
+test = WienEnv(verbose=True)
+test.reset()

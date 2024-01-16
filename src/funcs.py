@@ -14,6 +14,7 @@ def create_distance_matrix(env_places: int = 20, buffer: int = 2) -> np.array:
 
 	distances = pd.read_csv(
 		'../data/travel_times/wien_travel_times.csv',
+
 		sep = ';',
 		encoding = "ISO-8859-1"
 	)

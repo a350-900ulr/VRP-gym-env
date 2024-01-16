@@ -7,7 +7,7 @@ pygame.init()
 
 # Constants
 WIDTH, HEIGHT = 800, 800
-BIKE_SPEED = 5
+BIKE_SPEED = 1
 
 # Colors
 WHITE = (255, 255, 255)
@@ -19,7 +19,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Bike Travel")
 
 # Load bike image
-bike_image = pygame.image.load("bike.jpeg")  # Replace 'bike.png' with your image file
+bike_image = pygame.image.load("../../images/bike.jpeg")  # Replace 'bike.png' with your image file
 bike_image = pygame.transform.scale(bike_image, (30, 30))  # Scale image if needed
 
 

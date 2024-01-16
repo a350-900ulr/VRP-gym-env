@@ -1,17 +1,18 @@
-## Main options
+# Main options
 train = False  # run the model.learn() function & save the weights
 test = True  # use the model to run an episode
+visualize = False  # display actions in the environment
 
-## Training options
-environment_count = 1  # number of simultaneous environments to train on
+# Training options
+environment_count = 3  # number of simultaneous environments to train on
 training_timesteps = 10_000  # total number of samples (env steps) to train on
 
-## Environment options
+# Environment options
 environment_options = {
 	'place_count': 30,
 	'vehicle_count': 10,
 	'package_count': 10,
-	'verbose': True,  # print out vehicle & package info during each `step()`
+	'verbose': False,  # print out vehicle & package info during each `step()`
 	# if verbose is False, activate verbosity anyway after this many steps.
 	# this is useful if the model gets stuck.
 	'verbose_trigger': 100_000
@@ -27,6 +28,9 @@ import numpy as np
 import os
 
 if __name__ == '__main__':
+	if visualize and environment_count != 1:
+		raise Exception('Cannot visualize more than 1 environment')
+
 	os.environ['CUDA_VISIBLE_DEVICES'] = "0,1"
 	vec_env = make_vec_env(WienEnv, n_envs=environment_count, env_kwargs=environment_options)
 
@@ -51,9 +55,14 @@ if __name__ == '__main__':
 			action, _states = model.predict(obs)
 			obs, reward, done, info = vec_env.step(action)
 			# update progress
-			if previous_reward < (current_reward := np.sum(reward)):
-
-				#print(f'{str(reward):<10}', end='\n' if current_reward % 10 == 0 else '')
-				print(reward)
+			if previous_reward < (
+					current_reward := np.sum(reward) - environment_options['package_count']
+			):
+				if environment_count < 4:
+					print(f'{str(reward):<10}', end='\n' if current_reward % 10 == 0 else '')
+				else:
+					print(reward)
 				previous_reward = current_reward
-		print(info)
+
+			if visualize:
+				...
