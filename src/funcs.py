@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import random
 
+
 def create_distance_matrix(env_places: int = 20, buffer: int = 2) -> np.array:
 	"""
 	Uses the travel times file to generate a matrix of the distances between them, rounded to the nearest integer + 2
@@ -14,7 +15,6 @@ def create_distance_matrix(env_places: int = 20, buffer: int = 2) -> np.array:
 
 	distances = pd.read_csv(
 		'../data/travel_times/wien_travel_times.csv',
-
 		sep = ';',
 		encoding = "ISO-8859-1"
 	)
@@ -65,8 +65,6 @@ def filler(
 		result[0] = 0
 
 	return result
-
-
 
 
 def multi_disc(amount: int, value_range: int, zero_as_none = False) -> MultiDiscrete:

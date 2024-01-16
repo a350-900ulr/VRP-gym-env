@@ -172,7 +172,6 @@ class WienEnv(gym.Env):
 		:return: dict { environment, info }
 		"""
 
-
 		environment_object = {
 			'distances': self.distance_matrix,
 
@@ -288,16 +287,18 @@ class WienEnv(gym.Env):
 			distance += self.distance_matrix[p_start][self.environment['p_location_target'][p]]
 		return distance
 
-	def get_info(self):
-		v_infos = [
+	def get_info(self,
+		v_infos = (
 			'v_available', 'v_transit_start', 'v_transit_end', 'v_transit_remaining',
 			'v_has_package'
-		]
-		p_infos = [
-			'p_location_current', 'p_location_target', 'p_carrying_vehicle',
-			'p_delivered'
-		]
-		print(self.environment['v_id'])
+		),
+		p_infos = (
+			'p_location_current', 'p_location_target', 'p_carrying_vehicle', 'p_delivered'
+		)
+	) -> dict:
+		"""
+		:return: `self.environment` object but only keys shown in the default arguments for debugging & visualization
+		"""
 
 		if self.verbose:
 			print('vehicle info:')
