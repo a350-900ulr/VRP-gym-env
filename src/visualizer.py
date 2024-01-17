@@ -6,7 +6,7 @@ import numpy as np
 import random
 import colorsys
 from src.funcs import create_distance_matrix
-
+import time
 
 class Visualizer:
 	def __init__(self, environment_arguments: dict, verbose: bool = False):
@@ -24,6 +24,8 @@ class Visualizer:
 			.loc[:environment_arguments['place_count']]
 		self.screen = pg.display.set_mode(self.canvas_size)
 
+
+
 		self.colors = {
 			'packages': self.generate_colors(environment_arguments['package_count']),
 			'vehicles': self.generate_colors(environment_arguments['vehicle_count']),
@@ -31,6 +33,8 @@ class Visualizer:
 
 		pg.init()
 		pg.display.set_caption("Bike Travel")
+		self.font = pg.font.SysFont(None, 24)
+
 
 	def draw(self, env_info: dict):
 		"""
@@ -52,8 +56,31 @@ class Visualizer:
 		self.draw_places()
 		self.draw_packages(env_info)
 		self.draw_vehicles(env_info)
+
+		text_offset_x = 0
+		text_offset_y = 1
+		for stat, values in env_info.items():
+			if stat == 'p_location_current':
+				text_offset_x += self.canvas_size[0] / 2
+				text_offset_y = 1
+			if stat in ['v_available', 'p_delivered']:
+				values = values.astype(int)
+			if stat not in ['time', 'total_travel']:
+				values = np.delete(values, 0)
+			self.text(f'{stat}: {values}', text_offset_x + 15, text_offset_y * 32)
+			text_offset_y += 1
+
+
 		# update screen
 		pg.display.flip()
+		#time.sleep(1)
+
+	def text(self, input_text: str, x: int = 32, y: int = 32):
+		self.screen.blit(
+			self.font.render(input_text, True, (255, 255, 255)),
+			(x, y)
+		)
+		pg.display.update()
 
 	def convert_coordinates(self, latitude: float, longitude: float, offset = 0) -> list[float]:
 		"""
@@ -139,21 +166,24 @@ class Visualizer:
 		if a package is not in transit, use the generated colors to draw a circle for each package inside the place circle
 		:param env: info object from the environment step function to get the current package locations
 		"""
-		for index, location in enumerate(env['p_location_current'][1:]):
-			if env['p_carrying_vehicle'][index] != 0: continue  # only draw packages not on a vehicle
+		for index, location in enumerate(env['p_location_current'][1:], start=1):
+			# if a package is on a vehicle (in transit), skip it
+			if env['p_carrying_vehicle'][index] != 0:
+				#print(f'package {index} is on a vehicle')
+				continue
 
 			position = self.get_position(location)
 
 			if self.verbose:
 				print(
 					f'location: {location}'
-					f'color: {self.colors["packages"][index]}'
+					f'color: {self.colors["packages"][index-1]}'
 					f"center: {position}"
 				)
-
+			#print(f'package {index} is not on a vehicle')
 			pg.draw.circle(
 				self.screen,
-				color = self.colors['packages'][index],
+				color = self.colors['packages'][index-1],
 				center = position,
 				radius = 3,
 			)
@@ -189,7 +219,7 @@ class Visualizer:
 			def vehi(key): return env[key][v]
 
 			if vehi('v_transit_remaining') == 0:  # bike is at a location
-				position = self.get_position(vehi('v_transit_start'))
+				position = self.get_position(vehi('v_transit_end'))
 			else:  # bike is in transit
 				start = self.get_position(vehi('v_transit_start'))
 				end = self.get_position(vehi('v_transit_end'))
@@ -197,10 +227,12 @@ class Visualizer:
 
 				position = (
 					float(np.interp(
-						vehi('v_transit_remaining'), [distance, 0], [start[0], end[0]]
+						distance - vehi('v_transit_remaining'),
+						[0, distance], [start[0], end[0]]
 					)),
 					float(np.interp(
-						vehi('v_transit_remaining'), [distance, 0], [start[1], end[1]]
+						distance - vehi('v_transit_remaining'),
+						[0, distance], [start[1], end[1]]
 					)),
 				)
 

@@ -255,6 +255,7 @@ class WienEnv(gym.Env):
 						vehi('v_transit_end') == pack('p_location_current') and
 						vehi('v_transit_remaining') == 0  # vehicle is not moving
 					):
+						if self.verbose: print(f'package {p} picked up by vehicle {v}')
 						vehi_set('v_has_package', p)
 						pack_set('p_carrying_vehicle', v)
 
@@ -272,9 +273,13 @@ class WienEnv(gym.Env):
 					vehi('v_transit_end') == pack('p_location_target') and
 					vehi('v_transit_remaining') == 0
 				):
+					if self.verbose:
+						print(f'package {p} delivered by vehicle {pack("p_carrying_vehicle")}')
+					vehi_set('v_has_package', 0)
+
 					pack_set('p_carrying_vehicle', 0)
 					pack_set('p_delivered', True)
-					vehi_set('v_has_package', 0)
+
 
 		return sum(self.environment['p_delivered'])
 

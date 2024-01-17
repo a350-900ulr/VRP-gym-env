@@ -5,7 +5,7 @@ visualize = True  # display actions in the environment
 
 # Training options
 environment_count = 1  # number of simultaneous environments to train on
-training_timesteps = 10_000  # total number of samples (env steps) to train on
+training_timesteps = 50_000  # total number of samples (env steps) to train on
 
 # Environment options
 environment_options = {
@@ -73,4 +73,4 @@ if __name__ == '__main__':
 
 			if visualize:
 				vis.draw(info[0])
-				time.sleep(1)
+				time.sleep(.2)
