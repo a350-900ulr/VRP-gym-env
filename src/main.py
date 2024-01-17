@@ -1,10 +1,10 @@
 # Main options
 train = False  # run the model.learn() function & save the weights
 test = True  # use the model to run an episode
-visualize = False  # display actions in the environment
+visualize = True  # display actions in the environment
 
 # Training options
-environment_count = 3  # number of simultaneous environments to train on
+environment_count = 1  # number of simultaneous environments to train on
 training_timesteps = 10_000  # total number of samples (env steps) to train on
 
 # Environment options
@@ -26,6 +26,8 @@ from stable_baselines3.common.env_util import make_vec_env
 from src.wien_env import WienEnv
 import numpy as np
 import os
+from src.visualizer import Visualizer as Vis
+import time
 
 if __name__ == '__main__':
 	if visualize and environment_count != 1:
@@ -49,6 +51,11 @@ if __name__ == '__main__':
 		obs = vec_env.reset()
 		done = [False for _ in range(environment_count)]
 
+		if visualize:
+			vis = Vis(environment_options)
+
+
+
 		previous_reward = 0
 
 		while not all(list(done)):
@@ -65,4 +72,5 @@ if __name__ == '__main__':
 				previous_reward = current_reward
 
 			if visualize:
-				...
+				vis.draw(info[0])
+				time.sleep(1)
