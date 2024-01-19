@@ -19,6 +19,7 @@ class Visualizer:
 		self.canvas_size = (1000, 1000)
 		self.vienna_map = pg.image.load('../images/vienna_blank3_scaled_darkened_more.png')
 		self.place_circle = pg.image.load('../images/place_circle_60.png')
+		self.place_circle_delivered = pg.image.load('../images/place_circle_delivered.png')
 		self.distance_matrix = create_distance_matrix(environment_arguments['place_count'])
 		self.coordinates = pd.read_csv('../data/places/places.csv', sep=';')\
 			.loc[:environment_arguments['place_count']-1]
@@ -186,6 +187,12 @@ class Visualizer:
 				center = position,
 				radius = 3,
 			)
+
+			if env['p_delivered'][index]:
+				self.screen.blit(
+					source = self.place_circle_delivered,
+					dest = (position[0]-5, position[1]-5)
+				)
 
 	def draw_bike(self, x, y, vehicle_color):
 		"""

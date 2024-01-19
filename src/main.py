@@ -3,7 +3,8 @@ train = False  # run the model.learn() function & save the weights
 test = True  # use the model to run an episode
 visualize = True  # display actions in the environment
 
-# Training options
+# Training options. Otherwise, the model loaded for testing using the default naming format.
+# To load a model with a different name, change the model_name variable manually.
 environment_count = 1  # number of simultaneous environments to train on
 training_timesteps_k = 1  # max number of iterations to train on (multiplied by 1,000)
 
