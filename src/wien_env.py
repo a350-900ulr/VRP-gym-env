@@ -3,14 +3,14 @@ import random
 from typing import Any
 import gymnasium as gym
 from gymnasium.spaces import MultiDiscrete, Dict, MultiBinary, Box
-from src.funcs import create_distance_matrix, filler, multi_disc
+from funcs import create_distance_matrix, filler, multi_disc
 import numpy as np
 import time
 
 
 class WienEnv(gym.Env):
 	def __init__(self,
-		place_count: int = 80, vehicle_count: int = 10, package_count: int = 10,
+		place_count: int = 80, vehicle_count: int = 10, package_count: int = 20,
 		verbose: bool = False, verbose_trigger: int = 100_000
 	):
 		"""
@@ -280,8 +280,7 @@ class WienEnv(gym.Env):
 					pack_set('p_carrying_vehicle', 0)
 					pack_set('p_delivered', True)
 
-
-		return sum(self.environment['p_delivered'])
+		return sum(self.environment['p_delivered']-1)
 
 	def get_package_distances(self):
 		"""

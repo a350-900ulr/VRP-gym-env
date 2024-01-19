@@ -88,3 +88,12 @@ ppo_vrp_e10-t10_pvp-80-10-20:
 		* package_count: 20
 	final clock:       14988.999999999998
 	total travel time: 144163.8
+ppo_vrp_e10-t100_pvp-80-10-20:
+	time of test:      24-01-19_20-52-38
+	environment count: 10
+	environment options:
+		* place_count:   80
+		* vehicle_count: 10
+		* package_count: 20
+	final clock:       12663.999999999998
+	total travel time: 121805.59999999999

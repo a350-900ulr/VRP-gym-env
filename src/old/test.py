@@ -291,3 +291,34 @@ while RUNNING:
 			RUNNING = False
 
 pygame.quit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if True:
+	print(f"""
+big bepis
+	hoka
+		ffsaf
+fdsa
+	""")

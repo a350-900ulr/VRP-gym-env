@@ -5,7 +5,7 @@ from pygame import Color
 import numpy as np
 import random
 import colorsys
-from src.funcs import create_distance_matrix
+from funcs import create_distance_matrix
 import time
 
 class Visualizer:
