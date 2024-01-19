@@ -1,12 +1,12 @@
 # Main options
 train = False  # run the model.learn() function & save the weights
 test = True  # use the model to run an episode
-visualize = True  # display actions in the environment
+visualize = False  # display actions in the environment
 
 # Training options. Otherwise, the model loaded for testing using the default naming format.
 # To load a model with a different name, change the model_name variable manually.
-environment_count = 100  # number of simultaneous environments to train on
-training_timesteps_k = 1000  # max number of iterations to train on (multiplied by 1,000)
+environment_count = 10  # number of simultaneous environments to train on
+training_timesteps_k = 10  # max number of iterations to train on (multiplied by 1,000)
 
 # Environment options
 environment_options = {
@@ -57,46 +57,59 @@ if __name__ == '__main__':
 	if test:
 		print('testing...')
 
-		vec_env = make_vec_env(WienEnv, n_envs=1, env_kwargs=environment_options)
-		obs = vec_env.reset()
-		done = [False for _ in range(environment_count)]
-
-		if visualize:
+		if visualize:  # only 1 environment can be visualized
 			vis = Vis(environment_options)
-			if environment_count != 1:
-				warnings.warn(
-					'Only 1 environment can be visualized at a time, environment_count set to 1'
-				)
-				environment_count = 1
+			env = WienEnv(**environment_options)
+			obs, _ = env.reset()
+			done = False
 
-		previous_reward = 0
+			while not done:
+				action, _states = model.predict(obs)
+				obs, _, done, _, info = env.step(action)
 
-		while not all(list(done)):
-			action, _states = model.predict(obs)
-			obs, reward, done, info = vec_env.step(action)
-			# update progress
-			if previous_reward < (
-					current_reward := np.sum(reward) - environment_options['package_count']
-			):
-				if environment_count < 4:
-					print(f'{str(reward):<10}', end='\n' if current_reward % 10 == 0 else '')
-				else:
-					print(reward)
-				previous_reward = current_reward
+				if visualize:
+					vis.draw(info)
+					time.sleep(.2)
 
-			if visualize:
-				vis.draw(info[0])
-				time.sleep(.2)
+			final_clock = info['time']
+			total_travel_time = info['total_travel']
+
+		else:  # otherwise use the desired amount of environments
+			vec_env = make_vec_env(
+				WienEnv,
+				n_envs = environment_count,
+				env_kwargs = environment_options
+			)
+			obs = vec_env.reset()
+			done = [False] * environment_count
+			previous_reward = 0
+
+			while not all(list(done)):
+				action, _states = model.predict(obs)
+				obs, reward, done, info = vec_env.step(action)
+				# update progress
+				if previous_reward < (
+						current_reward := np.sum(reward) - environment_options['package_count']
+				):
+					if environment_count < 4:
+						print(f'{str(reward):<10}', end='\n' if current_reward % 10 == 0 else '')
+					else:
+						print(reward)
+					previous_reward = current_reward
+
+			final_clock = sum(info_single['time']/environment_count for info_single in info)
+			total_travel_time = sum(info_single['total_travel']/environment_count for info_single in info)
 
 		with open('results.txt', 'a') as f:
 			f.write(f'\n{model_name}:')
 			f.write(f'\n\ttime of test:      {datetime.now().strftime("%y-%m-%d_%H-%M-%S")}')
+			f.write(f'\n\tenvironment count: {environment_count}')
 			f.write(f'\n\tenvironment options:')
-			f.write(f'\n\t\tplace_count:    {environment_options["place_count"]}')
-			f.write(f'\n\t\tvehicle_count:  {environment_options["vehicle_count"]}')
-			f.write(f'\n\t\tpackage_count:  {environment_options["package_count"]}')
-			f.write(f'\n\tfinal time:        {info[0]["time"]}')
-			f.write(f'\n\ttotal travel time: {info[0]["total_travel"]}')
+			f.write(f'\n\t\t* place_count:   {environment_options["place_count"]}')
+			f.write(f'\n\t\t* vehicle_count: {environment_options["vehicle_count"]}')
+			f.write(f'\n\t\t* package_count: {environment_options["package_count"]}')
+			f.write(f'\n\tfinal clock:       {final_clock}')
+			f.write(f'\n\ttotal travel time: {total_travel_time}')
 
 		f.close()
 

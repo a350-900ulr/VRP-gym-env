@@ -59,7 +59,7 @@ def filler(
 		# starts at one for generating random place locations in the environment
 		result = np.array([random.randrange(1, fill_with) for _ in range(amount)])
 	else:
-		result = np.array([fill_with for _ in range(amount)])
+		result = np.array([fill_with] * amount)
 
 	if zero_at_start:
 		result[0] = 0
