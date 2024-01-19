@@ -261,8 +261,8 @@ class WienEnv(gym.Env):
 
 			# if a package is not delivered but on a vehicle, check if it has been delivered
 			else:
-
-				# same helper functions as before, but now the index is its carrying vehicle
+				# same helper functions as before, but now instead of checking every vehicle
+				# only the index of its carrying vehicle is used
 				def vehi(key):
 					return self.environment[key][pack('p_carrying_vehicle')]
 				def vehi_set(key, val):
@@ -276,7 +276,7 @@ class WienEnv(gym.Env):
 					if self.verbose:
 						print(f'package {p} delivered by vehicle {pack("p_carrying_vehicle")}')
 					vehi_set('v_has_package', 0)
-
+					pack_set('p_location_current', pack('p_location_target'))
 					pack_set('p_carrying_vehicle', 0)
 					pack_set('p_delivered', True)
 

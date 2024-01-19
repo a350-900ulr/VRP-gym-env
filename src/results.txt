@@ -1,0 +1,56 @@
+ppo_vrp_e1-t50000: time: 1264, travel: 11926
+ppo_vrp_e1-t50000: time: 1478, travel: 13926
+ppo_vrp_e1-t10000: time: 2329, travel: 21946
+ppo_vrp_e10-t100000: time: 3897, travel: 36727
+ppo_vrp_e100-t1000000: time: 1060, travel: 10017
+ppo_vrp_e1-t5000: time: 6145, travel: 5412
+ppo_vrp_e1-t1000: time: 135, travel: 115
+
+ppo_vrp_e1-t1_pvp-5-1-2:
+	time of test:      24-01-19_10-45-22
+	environment options:
+		place_count:    5
+		vehicle_count:  1
+		package_count:  2
+	final time:        201
+	total travel time: 181
+ppo_vrp_e1-t1_pvp-2-1-1:
+	time of test:      24-01-19_11-01-32
+	environment options:
+		place_count:    2
+		vehicle_count:  1
+		package_count:  1
+	final time:        35
+	total travel time: 24
+ppo_vrp_e1-t1_pvp-2-1-1:
+	time of test:      24-01-19_11-04-06
+	environment options:
+		place_count:    2
+		vehicle_count:  1
+		package_count:  1
+	final time:        21
+	total travel time: 8
+ppo_vrp_e1-t1_pvp-2-1-1:
+	time of test:      24-01-19_11-10-24
+	environment options:
+		place_count:    2
+		vehicle_count:  1
+		package_count:  1
+	final time:        28
+	total travel time: 16
+ppo_vrp_e1-t1_pvp-2-1-1:
+	time of test:      24-01-19_11-14-19
+	environment options:
+		place_count:    2
+		vehicle_count:  1
+		package_count:  1
+	final time:        14
+	total travel time: 8
+ppo_vrp_e1-t1_pvp-5-1-2:
+	time of test:      24-01-19_11-16-39
+	environment options:
+		place_count:    5
+		vehicle_count:  1
+		package_count:  2
+	final time:        143
+	total travel time: 128

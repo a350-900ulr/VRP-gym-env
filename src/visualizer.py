@@ -17,14 +17,12 @@ class Visualizer:
 		"""
 		self.verbose = verbose
 		self.canvas_size = (1000, 1000)
-		self.vienna_map = pg.image.load('../images/vienna_blank3_scaled_darkened.png')
+		self.vienna_map = pg.image.load('../images/vienna_blank3_scaled_darkened_more.png')
 		self.place_circle = pg.image.load('../images/place_circle_60.png')
 		self.distance_matrix = create_distance_matrix(environment_arguments['place_count'])
 		self.coordinates = pd.read_csv('../data/places/places.csv', sep=';')\
-			.loc[:environment_arguments['place_count']]
+			.loc[:environment_arguments['place_count']-1]
 		self.screen = pg.display.set_mode(self.canvas_size)
-
-
 
 		self.colors = {
 			'packages': self.generate_colors(environment_arguments['package_count']),
@@ -34,7 +32,6 @@ class Visualizer:
 		pg.init()
 		pg.display.set_caption("Bike Travel")
 		self.font = pg.font.SysFont(None, 24)
-
 
 	def draw(self, env_info: dict):
 		"""
@@ -47,6 +44,7 @@ class Visualizer:
 				sys.exit()
 
 		self.screen.fill(0)
+
 		# draw image on the bottom of the canvas
 		self.screen.blit(
 			source = self.vienna_map,
@@ -106,6 +104,7 @@ class Visualizer:
 		:param location_index: cannot exceed the initial place count
 		:return: tuple of x, y
 		"""
+		location_index -= 1
 		list_object = self.convert_coordinates(
 			self.coordinates.loc[location_index, 'latitude'],
 			self.coordinates.loc[location_index, 'longitude']
@@ -219,7 +218,11 @@ class Visualizer:
 			def vehi(key): return env[key][v]
 
 			if vehi('v_transit_remaining') == 0:  # bike is at a location
-				position = self.get_position(vehi('v_transit_end'))
+				# vehicle has not moved at all yet, thus it is the start of the simulation
+				if vehi('v_transit_end') == 0:
+					position = self.get_position(vehi('v_transit_start'))
+				else:
+					position = self.get_position(vehi('v_transit_end'))
 			else:  # bike is in transit
 				start = self.get_position(vehi('v_transit_start'))
 				end = self.get_position(vehi('v_transit_end'))
@@ -247,11 +250,3 @@ class Visualizer:
 					color = self.colors['packages'][vehi('v_has_package')-1],
 					rect = (position[0]-2, position[1]-3, 4, 3),
 				)
-
-
-
-# Visualizer(environment_arguments={
-# 	'place_count': 30,
-# 	'vehicle_count': 10,
-# 	'package_count': 10,
-# }).draw_bike(100, 100)

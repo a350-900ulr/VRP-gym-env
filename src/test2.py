@@ -37,11 +37,11 @@ test = {
 	'v_transit_start': [0, 2],
 	'v_transit_end': [0, 3],
 	'v_transit_remaining': [0, 7],
-	'v_has_package': [0, 2],
+	'v_has_package': [0, 0],
 
 	'p_location_current': [0, 1, 2],
 	'p_location_target': [0, 3, 6],
-	'p_carrying_vehicle': [0, 0, 1]
+	'p_carrying_vehicle': [0, 0, 0]
 }
 
 environment_options = {
