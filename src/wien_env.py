@@ -169,7 +169,7 @@ class WienEnv(gym.Env):
 		"""
 		Sets the environment back to its original state. The environment object is re-initialized with random vehicle & package positions to be delivered.
 		:param verbose: print out package location data
-		:return: dict { environment, info }
+		:return: tuple ( environment, info )
 		"""
 
 		environment_object = {

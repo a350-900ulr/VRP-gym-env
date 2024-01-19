@@ -5,14 +5,14 @@ visualize = True  # display actions in the environment
 
 # Training options. Otherwise, the model loaded for testing using the default naming format.
 # To load a model with a different name, change the model_name variable manually.
-environment_count = 1  # number of simultaneous environments to train on
-training_timesteps_k = 1  # max number of iterations to train on (multiplied by 1,000)
+environment_count = 100  # number of simultaneous environments to train on
+training_timesteps_k = 1000  # max number of iterations to train on (multiplied by 1,000)
 
 # Environment options
 environment_options = {
-	'place_count': 5,
-	'vehicle_count': 1,
-	'package_count': 2,
+	'place_count': 80,
+	'vehicle_count': 10,
+	'package_count': 20,
 	'verbose': False,  # print out vehicle & package info during each `step()`
 	# if verbose is False, activate verbosity anyway after this many steps.
 	# this is useful if the model gets stuck.
@@ -32,7 +32,6 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from src.wien_env import WienEnv
 import numpy as np
-import os
 from src.visualizer import Visualizer as Vis
 import time
 import warnings
@@ -41,7 +40,8 @@ from datetime import datetime
 
 if __name__ == '__main__':
 	if train:
-		vec_env = make_vec_env(WienEnv,
+		vec_env = make_vec_env(
+			WienEnv,
 			n_envs = environment_count,
 			env_kwargs = environment_options
 		)
@@ -56,6 +56,7 @@ if __name__ == '__main__':
 
 	if test:
 		print('testing...')
+
 		vec_env = make_vec_env(WienEnv, n_envs=1, env_kwargs=environment_options)
 		obs = vec_env.reset()
 		done = [False for _ in range(environment_count)]
@@ -99,4 +100,4 @@ if __name__ == '__main__':
 
 		f.close()
 
-	print('\nWrote to results file')
+		print('\nWrote to test results file')

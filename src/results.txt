@@ -54,3 +54,19 @@ ppo_vrp_e1-t1_pvp-5-1-2:
 		package_count:  2
 	final time:        143
 	total travel time: 128
+ppo_vrp_e100-t100_pvp-5-1-2:
+	time of test:      24-01-19_04-45-18
+	environment options:
+		place_count:    5
+		vehicle_count:  1
+		package_count:  2
+	final time:        139
+	total travel time: 129
+ppo_vrp_e100-t1000_pvp-80-10-20:
+	time of test:      24-01-19_05-49-06
+	environment options:
+		place_count:    80
+		vehicle_count:  10
+		package_count:  20
+	final time:        6580
+	total travel time: 63269
