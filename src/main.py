@@ -14,8 +14,8 @@ if __name__ == '__main__':
 	parser.add_argument('environment_count', type=int,  nargs='?', default=10)
 	parser.add_argument('train_time_k',      type=int,  nargs='?', default=100)
 	parser.add_argument('place_count',       type=int,  nargs='?', default=80)
-	parser.add_argument('vehicle_count',     type=int,  nargs='?', default=10)
-	parser.add_argument('package_count',     type=int,  nargs='?', default=20)
+	parser.add_argument('vehicle_count',     type=int,  nargs='?', default=5)
+	parser.add_argument('package_count',     type=int,  nargs='?', default=10)
 	parser.add_argument('verbose',           type=bool, nargs='?', default=False)
 	parser.add_argument('verbose_trig',      type=int,  nargs='?', default=100_000)
 

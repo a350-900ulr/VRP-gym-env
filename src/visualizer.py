@@ -56,6 +56,20 @@ class Visualizer:
 		self.draw_packages(env_info)
 		self.draw_vehicles(env_info)
 
+		# display name for dictionary keys
+		name = {
+			'time': 'Game Clock',
+			'total_travel': 'Total Travel Time',
+			'v_available': 'Available',
+			'v_transit_start': 'Start',
+			'v_transit_end': 'End',
+			'v_transit_remaining': 'Remaining',
+			'v_has_package': 'Package',
+			'p_location_current': 'Location',
+			'p_location_target': 'Target',
+			'p_carrying_vehicle': 'Vehicle',
+			'p_delivered': 'Delivered',
+		}
 		text_offset_x = 0
 		text_offset_y = 1
 		for stat, values in env_info.items():
@@ -66,7 +80,10 @@ class Visualizer:
 				values = values.astype(int)
 			if stat not in ['time', 'total_travel']:
 				values = np.delete(values, 0)
-			self.text(f'{stat}: {values}', text_offset_x + 15, text_offset_y * 32)
+
+
+
+			self.text(f'{name[stat]:<9}: {values}', text_offset_x + 15, text_offset_y * 32)
 			text_offset_y += 1
 
 
@@ -76,7 +93,12 @@ class Visualizer:
 
 	def text(self, input_text: str, x: int = 32, y: int = 32):
 		self.screen.blit(
-			self.font.render(input_text, True, (255, 255, 255)),
+			self.font.render(
+				input_text,
+				True,
+				(255, 255, 255),
+				(0, 0, 0),
+			),
 			(x, y)
 		)
 		pg.display.update()
