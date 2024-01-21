@@ -14,5 +14,39 @@ delivers any packages it passes over. Having only 1 type of vehicle & 1 type of 
 
 ## Usage <a name="usage"></a>
 
-To install the necessary dependencies, use `pip install -r requirements.txt` in a python version 3.11 environment
+After cloning the repository,
 
+1. First open a terminal in the root directory of the project.
+
+2. Next to install the necessary dependencies, use `pip install -r requirements.txt` in a python version 3.11 environment.
+
+3. Then navigate to the source directory with `cd src`
+
+4. Then run `python main.py visualize` to start a visualization with the default parameters.
+
+The usage of the program is as follows:
+
+python main.py [action] [-environment_count] [-training_timesteps_k] [-place_count] [-vehicle_count] [-package_count] [-verbose] [-verbose_trigger]
+
+### Actions
+ * 'train' - run the model.learn() function & save the weights
+ * 'test' - use the model to run an episode
+ * 'vis' - display actions in the environment
+
+### Model options
+
+The default model name is ppo_vrp_e`environment_count`-t`training_timesteps_k`_pvp-`place_count`-`vehicle_count`-`package_count`
+
+If the action is test, a model will be created in this naming format in the models directory. Otherwise, a model will be loaded with this naming format. To get a list of available models, use `ls models`
+
+ * environment_count - number of simultaneous environments to train/test on. In the visualization case, this argument is only used to load the correct model as only 1 environment can be visualized
+ * training_timesteps_k - max number of iterations to train on multiplied by 1,000. This argument is used when training the model, otherwise it is only to load the correct model for test/vis
+
+### Environment options
+* place_count - number of places in the environment. This can be in the range from 1-80, & defaults to 80
+* vehicle_count - number of vehicles, defaults to 10
+* package_count - number of packages, defaults to 20
+* verbose: False - print out vehicle & package info during each `env.step()`
+* verbose_trigger - if verbose is False, this will activate verbosity anyway after this many steps. This is useful if the model gets stuck. Defaults to 100,000
+
+To test the model `ppo_vrp_e10-t100_pvp-80-10-20.zip`, simply run `python main.py test 10 100 80 10 20`

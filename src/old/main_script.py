@@ -1,7 +1,10 @@
+# this is main.py, but without the argparse stuff
+
+
 # Main options
 train = False  # run the model.learn() function & save the weights
 test = True  # use the model to run an episode
-visualize = False  # display actions in the environment
+visualize = True  # display actions in the environment
 
 # Training options. Otherwise, the model loaded for testing using the default naming format.
 # To load a model with a different name, change the model_name variable manually.
@@ -30,12 +33,11 @@ model_name = (
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
-from src.wien_env import WienEnv
+from wien_env import WienEnv
 import numpy as np
-from src.visualizer import Visualizer as Vis
+from visualizer import Visualizer as Vis
 import time
 from datetime import datetime
-import argparse
 
 
 if __name__ == '__main__':
@@ -117,7 +119,7 @@ if __name__ == '__main__':
 
 			print(results)
 
-			with open('results.txt', 'a') as f:
+			with open('../results.txt', 'a') as f:
 				f.write(results)
 
 			f.close()

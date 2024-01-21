@@ -10,40 +10,27 @@ import argparse
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
-	parser.add_argument('action', type=str)
-	for int_arg in [
-		'-environment_count', '-training_timesteps_k',
-		'-place_count', '-vehicle_count', '-package_count'
-	]:
-		parser.add_argument(int_arg, type=int, required=False)
-	parser.add_argument('-verbose', type=bool, required=False)
-	parser.add_argument('-verbose_trigger', type=int, required=False)
+	parser.add_argument('action', type=str, choices=['train', 'test', 'vis'])
+	parser.add_argument('environment_count', type=int,  nargs='?', default=10)
+	parser.add_argument('train_time_k',      type=int,  nargs='?', default=100)
+	parser.add_argument('place_count',       type=int,  nargs='?', default=80)
+	parser.add_argument('vehicle_count',     type=int,  nargs='?', default=10)
+	parser.add_argument('package_count',     type=int,  nargs='?', default=20)
+	parser.add_argument('verbose',           type=bool, nargs='?', default=False)
+	parser.add_argument('verbose_trig',      type=int,  nargs='?', default=100_000)
 
 	arguments = parser.parse_args()
-
-	environment_count = \
-		arguments.environment_count if arguments.environment_count is not None else \
-		10
-	training_timesteps_k = \
-		arguments.training_timesteps_k if arguments.training_timesteps_k is not None else \
-		100
+	environment_count = arguments.environment_count
+	training_timesteps_k = arguments.train_time_k
 	environment_options = {
-		'place_count':
-			arguments.place_count if arguments.place_count is not None else
-			80,
-		'vehicle_count':
-			arguments.vehicle_count if arguments.vehicle_count is not None else
-			10,
-		'package_count':
-			arguments.package_count if arguments.package_count is not None else
-			20,
-		'verbose':
-			arguments.verbose if arguments.verbose is not None else
-			False,
-		'verbose_trigger':
-			arguments.verbose_trigger if arguments.verbose_trigger is not None else
-			100_000,
+		'place_count': arguments.place_count,
+		'vehicle_count': arguments.vehicle_count,
+		'package_count': arguments.package_count,
+		'verbose': arguments.verbose,
+		'verbose_trigger': arguments.verbose_trig,
 	}
+
+	model_path = 'models/'
 
 	# model to write if train is true, model to load if train is false
 	model_name = (
@@ -53,7 +40,6 @@ if __name__ == '__main__':
 		f'-{environment_options["vehicle_count"]}'
 		f'-{environment_options["package_count"]}'
 	)
-
 
 	match arguments.action:
 		case 'train':
@@ -65,12 +51,12 @@ if __name__ == '__main__':
 			)
 			model = PPO('MultiInputPolicy', vec_env, verbose=1)
 			model.learn(total_timesteps=training_timesteps_k * 1_000)
-			model.save(model_name)
+			model.save(model_path + model_name)
 			print(f'Model saved as {model_name}')
 
 		case 'test':
 			print('testing...')
-			model = PPO.load(model_name)
+			model = PPO.load(model_path + model_name)
 			print(f'Loaded model {model_name}')
 
 			vec_env = make_vec_env(
@@ -121,8 +107,8 @@ if __name__ == '__main__':
 
 			print('\nWrote to test results file')
 
-		case 'visualize':
-			model = PPO.load(model_name)
+		case 'vis':
+			model = PPO.load(model_path + model_name)
 			print(f'Loaded model {model_name}')
 
 			vis = Vis(environment_options)

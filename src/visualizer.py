@@ -32,7 +32,7 @@ class Visualizer:
 
 		pg.init()
 		pg.display.set_caption("Bike Travel")
-		self.font = pg.font.SysFont(None, 24)
+		self.font = pg.font.SysFont('mono', 16)
 
 	def draw(self, env_info: dict):
 		"""
