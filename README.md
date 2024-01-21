@@ -32,20 +32,20 @@ After cloning the repository,
 ## Parameters <a name="parameters"></a>
 
 ### Actions <a name='actions'></a>
- * 'train' - run the model.learn() function & save the weights
- * 'test' - use the model to run an episode
- * 'vis' - display actions in the environment
+ * '**train**' - run the model.learn() function & save the weights
+ * '**test**' - use the model to run an episode
+ * '**vis**' - display actions in the environment
 
 ### Model options <a name='model_options'></a>
- * environment_count - number of simultaneous environments to train/test on. In the visualization case, this argument is only used to load the correct model as only 1 environment can be visualized
- * training_timesteps_k - max number of iterations to train on multiplied by 1,000. This argument is used when training the model, otherwise it is only to load the correct model for test/vis
+ * **environment_count** - number of simultaneous environments to train/test on. In the visualization case, this argument is only used to load the correct model as only 1 environment can be visualized
+ * **training_timesteps_k** - max number of iterations to train on multiplied by 1,000. This argument is used when training the model, otherwise it is only to load the correct model for test/vis
 
 ### Environment options <a name='environment_options'></a>
-* place_count - number of places in the environment. This can be in the range from 1-80, & defaults to 80
-* vehicle_count - number of vehicles, defaults to 10
-* package_count - number of packages, defaults to 20
-* verbose: False - print out vehicle & package info during each `env.step()`
-* verbose_trigger - if verbose is False, this will activate verbosity anyway after this many steps. This is useful if the model gets stuck. Defaults to 100,000
+* **place_count** - number of places in the environment. This can be in the range from 1-80, & defaults to 80
+* **vehicle_count** - number of vehicles, defaults to 10
+* **package_count** - number of packages, defaults to 20
+* **verbose** - print out vehicle & package info during each `env.step()`
+* **verbose_trigger** - if verbose is False, this will activate verbosity anyway after this many steps. This is useful if the model gets stuck. Defaults to 100,000
 
 ## Usage <a name="usage"></a>
 
@@ -53,10 +53,10 @@ The command format is:
 
 > `python main.py [action] [-environment_count] [-training_timesteps_k] [-place_count] [-vehicle_count] [-package_count] [-verbose] [-verbose_trigger]`
 
-Train:
-* To train a model with 5 simultaneous environments for 2 million timesteps with an environment using 40 places, 12 vehicles, & 25 packages, the command would be `python main.py train 5 2000 40 12 25`
+Training:
+* For example, to train a model with 5 simultaneous environments for 2 million timesteps with an environment using 40 places, 12 vehicles, & 25 packages, the command would be `python main.py train 5 2000 40 12 25`
 
-Test/Visualize:
+Testing/Visualization:
 * To get a list of available models, use `ls models`
 * The default model name format is "ppo_vrp_e`environment_count`-t`training_timesteps_k`_pvp-`place_count`-`vehicle_count`-`package_count`"
 * To test a speicfic model, specify the parameters in the same way.
