@@ -37,6 +37,7 @@ class Visualizer:
 		}
 
 		pg.init()
+		self.screen.fill(0)
 		pg.display.set_caption("Bike Travel")
 		self.font = pg.font.SysFont('mono', 16)
 
@@ -50,7 +51,7 @@ class Visualizer:
 				pg.quit()
 				sys.exit()
 
-		self.screen.fill(0)
+
 
 		# draw image on the bottom of the canvas
 		self.screen.blit(
