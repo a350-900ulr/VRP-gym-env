@@ -29,9 +29,7 @@ while not done:
 
 
 
-from src.wien_env import WienEnv
 from src.visualizer import Visualizer as Vis
-import numpy as np
 
 test = {
 	'v_transit_start': [0, 2],

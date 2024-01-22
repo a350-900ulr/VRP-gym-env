@@ -293,8 +293,7 @@ class WienEnv(gym.Env):
 
 	def get_info(self,
 		v_infos = (
-			'v_available', 'v_transit_start', 'v_transit_end', 'v_transit_remaining',
-			'v_has_package'
+			'v_transit_start', 'v_transit_end', 'v_transit_remaining', 'v_has_package'
 		),
 		p_infos = (
 			'p_location_current', 'p_location_target', 'p_carrying_vehicle', 'p_delivered'
@@ -313,13 +312,13 @@ class WienEnv(gym.Env):
 				print(f'\t{p_info}: {self.environment[p_info]}')
 			time.sleep(.1)
 
-		info_dict = {
-			'time': self.clock,
-			'total_travel': self.total_travel,
-		}
+		info_dict = {}
 
 		for key in v_infos + p_infos:
 			info_dict[key] = self.environment[key]
+
+		info_dict['time'] = self.clock
+		info_dict['total_travel'] = self.total_travel
 
 		return info_dict
 

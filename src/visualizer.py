@@ -7,6 +7,7 @@ import random
 import colorsys
 from funcs import create_distance_matrix
 import time
+import warnings
 
 class Visualizer:
 	def __init__(self, environment_arguments: dict, verbose: bool = False):
@@ -15,6 +16,11 @@ class Visualizer:
 		:param environment_arguments: dictionary containing the keywords argument used to create the environment
 		:param verbose: print out package colors & locations
 		"""
+		if environment_arguments['vehicle_count'] > 20:
+			warnings.warn('Visualizer is not optimized for more than 20 vehicles')
+		if environment_arguments['package_count'] > 29:
+			warnings.warn('Visualizer is not optimized for more than 29 packages')
+
 		self.verbose = verbose
 		self.canvas_size = (1000, 1000)
 		self.vienna_map = pg.image.load('../images/vienna_blank3_scaled_darkened_more.png')
@@ -26,8 +32,8 @@ class Visualizer:
 		self.screen = pg.display.set_mode(self.canvas_size)
 
 		self.colors = {
-			'packages': self.generate_colors(environment_arguments['package_count']),
 			'vehicles': self.generate_colors(environment_arguments['vehicle_count']),
+			'packages': self.generate_colors(environment_arguments['package_count']),
 		}
 
 		pg.init()
@@ -52,44 +58,83 @@ class Visualizer:
 			dest = (0, self.canvas_size[1] - self.vienna_map.get_size()[1])
 		)
 
+		self.draw_info(env_info)
 		self.draw_places()
 		self.draw_packages(env_info)
 		self.draw_vehicles(env_info)
 
+
+		# update screen
+		pg.display.flip()
+
+	def draw_info(self, env_info: dict):
+		"""
+		draws info headers at the top of the screen from the `env.get_info()` object
+		"""
 		# display name for dictionary keys
 		name = {
-			'time': 'Game Clock',
-			'total_travel': 'Total Travel Time',
-			'v_available': 'Available',
 			'v_transit_start': 'Start',
 			'v_transit_end': 'End',
 			'v_transit_remaining': 'Remaining',
 			'v_has_package': 'Package',
+
 			'p_location_current': 'Location',
 			'p_location_target': 'Target',
 			'p_carrying_vehicle': 'Vehicle',
 			'p_delivered': 'Delivered',
+
+			'time':         'Game Clock       ',
+			'total_travel': 'Total Travel Time',
 		}
 		text_offset_x = 0
-		text_offset_y = 1
+		text_offset_y = 0
 		for stat, values in env_info.items():
+			# move environment details to the right side of the screen
+			if stat == 'time':
+				text_offset_x += self.canvas_size[0] / 1.4
+				text_offset_y = 0
+
+			# convert boolean list delivered status to integer
+			if stat == 'p_delivered':
+				values = list(map(int, values))
+
+			# print vehicle header above the vehicle stats with their colors
+			if stat == 'v_transit_start':
+				self.text('Vehicles', text_offset_x + 15, text_offset_y * 32)
+				for v, vehicle_color in enumerate(self.colors['vehicles']):
+					self.draw_bike(
+						140 + v * 30, text_offset_y * 30 + 20,
+						vehicle_color
+					)
+				text_offset_y += 1
+
+			# print package header above the package stats with their colors
 			if stat == 'p_location_current':
-				text_offset_x += self.canvas_size[0] / 2
-				text_offset_y = 1
-			if stat in ['v_available', 'p_delivered']:
-				values = values.astype(int)
+				self.text('Packages', text_offset_x + 15, text_offset_y * 32)
+				for p, package_color in enumerate(self.colors['packages']):
+					self.draw_single_package(
+						(140 + p * 30, text_offset_y * 30 + 30),
+						package_color
+					)
+				text_offset_y += 1
+
+			# finally, remove the 1st dummy value from stats & convert to padded string
 			if stat not in ['time', 'total_travel']:
-				values = np.delete(values, 0)
+				values = self.pad_digits(values[1:])
 
-
-
-			self.text(f'{name[stat]:<9}: {values}', text_offset_x + 15, text_offset_y * 32)
+			self.text(
+				f'{name[stat]:<9}: {values}',
+				text_offset_x + 15, text_offset_y * 32
+			)
 			text_offset_y += 1
 
 
-		# update screen
-		pg.display.flip()
-		#time.sleep(1)
+
+	def pad_digits(self, input_list: list[int]) -> str:
+		"""
+		creates a string representation of an integer list, where any number less than 10 is padded with a space
+		"""
+		return ' '.join(f'{integer:2d}' for integer in input_list)
 
 	def text(self, input_text: str, x: int = 32, y: int = 32):
 		self.screen.blit(
@@ -99,7 +144,7 @@ class Visualizer:
 				(255, 255, 255),
 				(0, 0, 0),
 			),
-			(x, y)
+			(x, y+10)
 		)
 		pg.display.update()
 
@@ -183,6 +228,14 @@ class Visualizer:
 			)
 		pg.display.flip()
 
+	def draw_single_package(self, center, color):
+		pg.draw.circle(
+			self.screen,
+			color = color,
+			center = center,
+			radius = 3,
+		)
+
 	def draw_packages(self, env: dict):
 		"""
 		if a package is not in transit, use the generated colors to draw a circle for each package inside the place circle
@@ -203,12 +256,7 @@ class Visualizer:
 					f"center: {position}"
 				)
 			#print(f'package {index} is not on a vehicle')
-			pg.draw.circle(
-				self.screen,
-				color = self.colors['packages'][index-1],
-				center = position,
-				radius = 3,
-			)
+			self.draw_single_package(position, self.colors['packages'][index-1])
 
 			if env['p_delivered'][index]:
 				self.screen.blit(
@@ -279,3 +327,28 @@ class Visualizer:
 					color = self.colors['packages'][vehi('v_has_package')-1],
 					rect = (position[0]-2, position[1]-3, 4, 3),
 				)
+
+# test = {
+# 	'v_transit_start':     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+# 	'v_transit_end':       [0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 54, 44, 33, 22, 13],
+# 	'v_transit_remaining': [0, 7, 5, 6, 4, 2, 6, 1, 10, 23, 32, 23, 1, 1, 2],
+# 	'v_has_package':       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#
+# 	'p_location_current':  [0, 1, 2],
+# 	'p_location_target': [0, 3, 6],
+# 	'p_carrying_vehicle': [0, 0, 0],
+# 	'p_delivered': [0, 0, 0],
+#
+# 	'time': 100,
+# 	'total_travel': 500,
+# }
+#
+# environment_options = {
+# 	'place_count': 80,
+# 	'vehicle_count': len(test['v_transit_start'])-1,
+# 	'package_count': len(test['p_location_current'])-1
+# }
+#
+# vis = Visualizer(environment_options)
+# vis.draw(test)
+# time.sleep(100)
