@@ -27,7 +27,7 @@ After cloning the repository,
 
 3. Then navigate to the source directory with `cd src`
 
-4. Lastly run `python main.py visualize` to start a visualization with the default parameters.
+4. Lastly run `python main.py vis` to start a visualization with the default parameters.
 
 ## Parameters <a name="parameters"></a>
 

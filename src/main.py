@@ -10,7 +10,9 @@ import argparse
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
-	parser.add_argument('action', type=str, choices=['train', 'test', 'vis'])
+	parser.add_argument('action', type=str, choices=[
+		'train', 'test', 'vis', 'details'
+	])
 	parser.add_argument('environment_count', type=int,  nargs='?', default=10)
 	parser.add_argument('train_time_k',      type=int,  nargs='?', default=100)
 	parser.add_argument('place_count',       type=int,  nargs='?', default=80)
@@ -123,5 +125,9 @@ if __name__ == '__main__':
 				vis.draw(info)
 				time.sleep(.2)
 
+		case 'details':
+			model = PPO.load(model_path + model_name)
+			print(model.policy)
+
 		case _:
-			raise ValueError('action must be train, test, or visualize')
+			raise ValueError('action must be train, test, or vis')
