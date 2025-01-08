@@ -2,7 +2,7 @@
 import random
 from typing import Any
 import gymnasium as gym
-from gymnasium.spaces import MultiDiscrete, Dict, MultiBinary, Box
+from gymnasium.spaces import MultiDiscrete, Dict, MultiBinary, Box, Discrete
 from funcs import create_distance_matrix, filler, multi_disc
 import numpy as np
 import time
@@ -41,10 +41,10 @@ class WienEnv(gym.Env):
 			# information of all location distances, regardless of how many locations end up
 			# being used
 			'distances': Box(
-				low = 0,
-				high = np.amax(self.distance_matrix),  # -> 91 in full matrix w/o buffer
-				shape = (self.place_count, self.place_count),
-				dtype = int
+				low=0,
+				high=np.amax(self.distance_matrix),  # -> 91 in full matrix w/o buffer
+				shape=(self.place_count, self.place_count),
+				dtype=int
 			),
 
 			'v_id': MultiDiscrete(filler(self.vehicle_count, self.vehicle_count)),
@@ -61,6 +61,8 @@ class WienEnv(gym.Env):
 			'p_location_target':  MultiDiscrete(filler(self.package_count, self.place_count)),
 			'p_carrying_vehicle': MultiDiscrete(filler(self.package_count, self.vehicle_count)),
 			'p_delivered': MultiBinary(self.package_count),
+			# figure out a way to get a ratio of package actual transit time to optimal
+			'p_transit_extra': Discrete
 		})
 		'''
 		distances:
@@ -192,7 +194,8 @@ class WienEnv(gym.Env):
 			# the same as the starting location (location_current)
 			'p_location_target': [0],
 			'p_carrying_vehicle': filler(self.package_count),
-			'p_delivered': filler(self.package_count, False)
+			'p_delivered': filler(self.package_count, False),
+			'p_transit_extra': filler(self.package_count, )
 		}
 
 		if verbose:

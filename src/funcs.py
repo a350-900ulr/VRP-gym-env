@@ -49,10 +49,11 @@ def filler(
 ) -> np.array:
 	"""
 	:param amount: length of list to return
-	:param fill_with: value to fill the list with, or in the case of randomization fill with a random integer in range of [0, fill_with)
+	:param fill_with: value to fill the list with, or in the case of randomization fill with a
+		random integer in range of `[0, fill_with)`
 	:param random_int_up_to_fill: choice to randomize an integer range
 	:param zero_at_start: whether to replace the 1st value with a 0
-	:return: np array of shape (amount,)
+	:return: np array of shape `(amount,)`
 	"""
 
 	if random_int_up_to_fill:
