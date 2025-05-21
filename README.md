@@ -1,4 +1,4 @@
-<h1 style="text-align: center;" align="center">William Amminger</h1>
+<h1 style="text-align: center;" align="center">Reinforcement Learning on the Vehicle Routing Problem</h1>
 <p style="text-align: center;" align="center">
 	194.077 Applied Deep Learning 2023W, VU, 2.0h, 3.0EC<br>
 </p>

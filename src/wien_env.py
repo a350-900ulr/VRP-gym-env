@@ -62,7 +62,7 @@ class WienEnv(gym.Env):
 			'p_carrying_vehicle': MultiDiscrete(filler(self.package_count, self.vehicle_count)),
 			'p_delivered': MultiBinary(self.package_count),
 			# figure out a way to get a ratio of package actual transit time to optimal
-			'p_transit_extra': Discrete
+			#'p_transit_extra': Discrete
 		})
 		'''
 		distances:
@@ -195,7 +195,7 @@ class WienEnv(gym.Env):
 			'p_location_target': [0],
 			'p_carrying_vehicle': filler(self.package_count),
 			'p_delivered': filler(self.package_count, False),
-			'p_transit_extra': filler(self.package_count, )
+			#'p_transit_extra': filler(self.package_count, )
 		}
 
 		if verbose:
