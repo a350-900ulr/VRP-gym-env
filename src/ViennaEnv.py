@@ -30,12 +30,14 @@ class ViennaEnv(gym.Env):
 		self.place_count = place_count + 1
 		self.vehicle_count = vehicle_count + 1
 		self.package_count = package_count + 1
-		self.clock = 0  # total time the episode has been running
-		self.total_travel = 0  # sum of all distance traveled by all vehicles
+
 		self.distance_matrix = create_distance_matrix(place_count)
 		self.verbose = verbose
 		self.verbose_trigger = verbose_trigger
 		
+		self.clock = 0  # total time the episode has been running
+		self.total_travel = 0  # sum of all distance traveled by all vehicles
+		self.package_origins = []
 		self.package_ratios = [  # to update `self.observation_space['p_transit_extra']
 			{
 				'ideal': 0,  # holds the minimum required distance to deliver a package
@@ -57,19 +59,17 @@ class ViennaEnv(gym.Env):
 			# 	dtype=int
 			# ),
 
-			'v_id': MultiDiscrete(filler(self.vehicle_count, self.vehicle_count)),
+			'v_id': self.multi_disc('v', self.vehicle_count),
 			'v_available': MultiBinary(self.vehicle_count),
-			'v_transit_start': MultiDiscrete(filler(self.vehicle_count, self.place_count)),
-			'v_transit_end': MultiDiscrete(filler(self.vehicle_count, self.place_count)),
-			'v_transit_remaining': MultiDiscrete(filler(
-				self.vehicle_count, np.amax(self.distance_matrix)
-			)),
-			'v_has_package': MultiDiscrete(filler(self.vehicle_count, self.package_count)),
+			'v_transit_start': self.multi_disc('v', self.place_count),
+			'v_transit_end': self.multi_disc('v', self.place_count),
+			'v_transit_remaining': self.multi_disc('v', np.amax(self.distance_matrix)),
+			'v_has_package': self.multi_disc('v', self.package_count),
 
-			'p_id': MultiDiscrete(filler(self.package_count, self.package_count)),
-			'p_location_current': MultiDiscrete(filler(self.package_count, self.place_count)),
-			'p_location_target':  MultiDiscrete(filler(self.package_count, self.place_count)),
-			'p_carrying_vehicle': MultiDiscrete(filler(self.package_count, self.vehicle_count)),
+			'p_id': self.multi_disc('p', self.package_count),
+			'p_location_current': self.multi_disc('p', self.place_count),
+			'p_location_target':  self.multi_disc('p', self.place_count),
+			'p_carrying_vehicle': self.multi_disc('p', self.vehicle_count),
 			'p_delivered': MultiBinary(self.package_count),
 			'p_transit_extra': Box(low=0, high=1, shape=(self.package_count,))
 		})
@@ -129,6 +129,18 @@ class ViennaEnv(gym.Env):
 		:param verbose: Print out package location data.
 		:return: environment, info
 		"""
+		super().reset(seed=seed)
+		
+		self.clock = 0  # total time the episode has been running
+		self.total_travel = 0  # sum of all distance traveled by all vehicles
+		self.package_origins = []
+		self.package_ratios = [  # to update `self.observation_space['p_transit_extra']
+			{
+				'ideal': 0,  # holds the minimum required distance to deliver a package
+				'actual': 1  # total distance each package has traveled on a vehicle,
+				# padded by 1 to avoid division by 0
+			} for _ in range(self.package_count)
+		]
 		
 		environment_object = {
 			#'distances': self.distance_matrix,
@@ -143,11 +155,10 @@ class ViennaEnv(gym.Env):
 			'v_has_package': filler(self.vehicle_count),
 			
 			'p_id': np.array(range(self.package_count)),
-			'p_location_current': filler(
-				self.package_count, self.place_count, True, True
-			),
-			# the target location will be generated later in the code to make sure it is not
-			# the same as the starting location (`location_current`)
+			# 'p_location_current': filler(
+			# 	self.package_count, self.place_count, True, True
+			# ),
+			'p_location_current': [0],
 			'p_location_target': [0],
 			'p_carrying_vehicle': filler(self.package_count),
 			'p_delivered': filler(self.package_count, False),
@@ -160,20 +171,32 @@ class ViennaEnv(gym.Env):
 				f"\ntarg: {len(environment_object['p_location_target'])}"
 			)
 		
-		# fill target destinations with something other than their starting location
+		# fill origin & target destinations with random unique values
+		locations = filler(
+			self.package_count * 2 - 2,
+			self.place_count,
+			random_int_up_to_fill=True
+		)
+		
+		# populate package origins & targets
 		for p in range(1, self.package_count):
-			origin = environment_object['p_location_current'][p]
-			
-			valid_values = list(range(1, self.place_count))
-			valid_values.remove(origin)
+			environment_object['p_location_current'].append(locations[p-1])
+			self.package_origins.append(locations[p-1])
+
+			environment_object['p_location_target'].append(locations[p-2+self.package_count])
+
 			if verbose:
 				print(f'\nindex: {p}')
 			
-			target = random.choice(valid_values)
-			environment_object['p_location_target'].append(target)
-			
 			# assign the ideal package distances
-			self.package_ratios[p]['ideal'] = self.distance_matrix[origin][target] + 1
+			self.package_ratios[p]['ideal'] = \
+				self.distance_matrix[locations[p-1]][locations[p-2+self.package_count]] + 1
+			if verbose:
+				print(
+					f'\nFor package {p}:'
+					f'\n\tfrom {locations[p-1]} to {locations[p-2+self.package_count]}'
+					f'\n\tgot value {self.distance_matrix[locations[p-1]][locations[p-2+self.package_count]] + 1}'
+				)
 		
 		# set the delivered status of package 0 to true, so that the simulation can still detect
 		# when all packages are delivered
@@ -186,7 +209,6 @@ class ViennaEnv(gym.Env):
 				'total_travel': self.total_travel
 			}
 		)
-
 
 	def step(self, action) -> tuple[dict, float, bool, bool, dict[str, Any]]:
 		"""
@@ -274,9 +296,8 @@ class ViennaEnv(gym.Env):
 			# if a package is on a vehicle, make sure its location is up to date
 			if (
 				pack('p_carrying_vehicle') != 0 and
-				(updated_location :=
-					pack('p_location_current') !=
-					self.environment['v_transit_start'][pack('p_carrying_vehicle')]
+				pack('p_location_current') != (updated_location :=
+						self.environment['v_transit_start'][pack('p_carrying_vehicle')]
 				)
 			):
 				pack_set('p_location_current', updated_location)
@@ -325,6 +346,9 @@ class ViennaEnv(gym.Env):
 						'p_transit_extra',
 						self.package_ratios[p]['ideal'] / self.package_ratios[p]['actual']
 					)
+					if pack('p_transit_extra') > 1:
+						print('breakpoint')
+						# why? self.package_origins differs from the print statement after generating, run in debug mode
 		
 		#return sum(self.environment['p_delivered']-1)
 		return sum(self.environment['p_transit_extra'])
@@ -389,6 +413,29 @@ class ViennaEnv(gym.Env):
 		info_dict['total_travel'] = self.total_travel
 		
 		return info_dict
+	
+	def multi_disc(self, mode: str, value_range: int) -> MultiDiscrete:
+		"""
+		Shorthand for `MultiDiscrete(filler())` used by the observation space. This essentially
+		creates a `MultiDiscrete` containing `amount` number of `Discrete` spaces with the range of
+		`value_range`.
+		
+		:param mode: Number of `Discrete` objects in the return object, where 'v' uses
+			`self.vehicle_count` & 'p' uses `self.package_count`.
+		:param value_range: The range of each `Discrete` object, indicating the possible range of
+			values that a single Discrete element could be.
+		:return: A `MultiDiscrete` object of shape (amount, value_range)
+		"""
+		
+		if mode == 'v':
+			amount = self.vehicle_count
+		elif mode == 'p':
+			amount = self.package_count
+		else:
+			raise ValueError('Invalid mode')
+		
+		return MultiDiscrete(filler(amount, value_range))
+
 
 def filler(
 	amount: int, fill_with: Any = 0, random_int_up_to_fill: bool = False,
@@ -405,33 +452,15 @@ def filler(
 	
 	if random_int_up_to_fill:
 		# starts at one for generating random place locations in the environment
-		result = np.array([random.randrange(1, fill_with) for _ in range(amount)])
+		#result = [random.randrange(1, fill_with) for _ in range(amount)]
+		result = random.sample(range(1, fill_with), amount)
 	else:
-		result = np.array([fill_with] * amount)
+		result = [fill_with] * amount
 	
 	if zero_at_start:
 		result[0] = 0
 	
-	return result
+	return np.array(result)
 
 
-def multi_disc(amount: int, value_range: int, zero_as_none = False) -> MultiDiscrete:
-	"""
-	Shorthand for `MultiDiscrete(filler())` used by the observation space. This essentially
-	creates a `MultiDiscrete` containing `amount` number of `Discrete` spaces with the range of
-	`value_range`.
-	
-	:param amount: Number of `Discrete` objects in the return object
-	:param value_range: The range of each `Discrete` object, indicating the possible range of
-		values that a single Discrete element could be.
-	:param zero_as_none: Whether to shift the range of each Discrete object by 1 so that 0
-		represents the empty value. This is used by environment variables that could have a
-		`None` value, such as when a vehicle contains no package.
-	:return: A `MultiDiscrete` object of shape (amount, value_range)
-	"""
-	from gymnasium.spaces import MultiDiscrete
-	if zero_as_none:
-		return MultiDiscrete(filler(amount, value_range+1))
-	else:
-		return MultiDiscrete(filler(amount, value_range))
 

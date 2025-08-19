@@ -13,13 +13,13 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('action', type=str, choices=[
 		'train', 'test', 'vis', 'details',
-	], nargs='?', default='vis')
+	], nargs='?', default='test')
 	parser.add_argument('environment_count', type=int,  nargs='?', default=10)
 	parser.add_argument('train_time_k',      type=int,  nargs='?', default=100)
 	parser.add_argument('place_count',       type=int,  nargs='?', default=80)
 	parser.add_argument('vehicle_count',     type=int,  nargs='?', default=5)
 	parser.add_argument('package_count',     type=int,  nargs='?', default=10)
-	parser.add_argument('verbose',           type=bool, nargs='?', default=False)
+	parser.add_argument('verbose',           type=bool, nargs='?', default=True)
 	parser.add_argument('verbose_trig_k',    type=int,  nargs='?', default=2_000)
 
 	arguments = parser.parse_args()
@@ -35,6 +35,9 @@ if __name__ == '__main__':
 	
 	if environment_options['verbose_trigger'] <= training_timesteps_k * 1_000:
 		warn('Verbosity trigger is smaller than training timesteps, so it will likely trigger.')
+		
+	assert environment_options['package_count'] * 2 <= environment_options['place_count'], \
+		'There are less places than unique package origin/target pairs available.'
 
 	model_path = 'models/'
 
@@ -144,7 +147,7 @@ if __name__ == '__main__':
 				obs, _, done, _, info = env.step(action)
 
 				vis.draw(info)
-				time.sleep(.2)
+				time.sleep(.1)
 			
 			input('Press ENTER to exit.')
 
