@@ -5,16 +5,17 @@ from pygame import Color
 import numpy as np
 import random
 import colorsys
-from funcs import create_distance_matrix
-import time
+from distances import create_distance_matrix
 import warnings
 
 class Visualizer:
 	def __init__(self, environment_arguments: dict, verbose: bool = False):
 		"""
-		Provides a visualization of the WienEnv environment using PyGame.
-		:param environment_arguments: dictionary containing the keywords argument used to create the environment
-		:param verbose: print out package colors & locations
+		Provides a visualization of the ViennaEnv environment using PyGame.
+		
+		:param environment_arguments: Dictionary containing the keywords argument used to create
+			the environment.
+		:param verbose: Print out package colors & locations.
 		"""
 		if environment_arguments['vehicle_count'] > 20:
 			warnings.warn('Visualizer is not optimized for more than 20 vehicles')
@@ -32,31 +33,30 @@ class Visualizer:
 		self.screen = pg.display.set_mode(self.canvas_size)
 
 		self.colors = {
-			'vehicles': self.generate_colors(environment_arguments['vehicle_count']),
-			'packages': self.generate_colors(environment_arguments['package_count']),
+			'vehicles': generate_colors(environment_arguments['vehicle_count']),
+			'packages': generate_colors(environment_arguments['package_count']),
 		}
 
 		pg.init()
-		self.screen.fill(0)
+		#self.screen.fill(0)
 		pg.display.set_caption("Bike Travel")
 		self.font = pg.font.SysFont('mono', 16)
-
+		
 	def draw(self, env_info: dict):
 		"""
-		main drawing function, called after every dispatch action
-		:param env_info: the info object returned from the environment step function
+		Main drawing function, called after every dispatch action.
+		
+		:param env_info: The info object returned from the environment step function.
 		"""
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
 				pg.quit()
 				sys.exit()
-
-
-
+			
 		# draw image on the bottom of the canvas
 		self.screen.blit(
-			source = self.vienna_map,
-			dest = (0, self.canvas_size[1] - self.vienna_map.get_size()[1])
+			source=self.vienna_map,
+			dest=(0, self.canvas_size[1] - self.vienna_map.get_size()[1])
 		)
 
 		self.draw_info(env_info)
@@ -64,13 +64,12 @@ class Visualizer:
 		self.draw_packages(env_info)
 		self.draw_vehicles(env_info)
 
-
 		# update screen
 		pg.display.flip()
 
 	def draw_info(self, env_info: dict):
 		"""
-		draws info headers at the top of the screen from the `env.get_info()` object
+		Draws info headers at the top of the screen from the `env.get_info()` object.
 		"""
 		# display name for dictionary keys
 		name = {
@@ -82,6 +81,7 @@ class Visualizer:
 			'p_location_current': 'Location',
 			'p_location_target': 'Target',
 			'p_carrying_vehicle': 'Vehicle',
+			'p_ratios': 'Score',
 			'p_delivered': 'Delivered',
 
 			'time':         'Game Clock       ',
@@ -90,6 +90,8 @@ class Visualizer:
 		text_offset_x = 0
 		text_offset_y = 0
 		for stat, values in env_info.items():
+			if stat == 'p_carrying_vehicle': continue
+			
 			# move environment details to the right side of the screen
 			if stat == 'time':
 				text_offset_x += self.canvas_size[0] / 1.4
@@ -100,7 +102,7 @@ class Visualizer:
 				values = list(map(int, values))
 
 			# print vehicle header above the vehicle stats with their colors
-			if stat == 'v_transit_start':
+			if stat == 'v_transit_start':  # 1st vehicle key name
 				self.text('Vehicles', text_offset_x + 15, text_offset_y * 32)
 				for v, vehicle_color in enumerate(self.colors['vehicles']):
 					self.draw_bike(
@@ -110,7 +112,7 @@ class Visualizer:
 				text_offset_y += 1
 
 			# print package header above the package stats with their colors
-			if stat == 'p_location_current':
+			if stat == 'p_location_current':  # 1st package key name
 				self.text('Packages', text_offset_x + 15, text_offset_y * 32)
 				for p, package_color in enumerate(self.colors['packages']):
 					self.draw_single_package(
@@ -118,24 +120,25 @@ class Visualizer:
 						package_color
 					)
 				text_offset_y += 1
-
-			# finally, remove the 1st dummy value from stats & convert to padded string
+	
+	
+			'''
+			Finally, remove the 1st empty value from stats & create a padded string
+			representation of an integer list, where any number less than 10 is padded with a
+			space, while a 0 is completely empty.
+			'''
 			if stat not in ['time', 'total_travel']:
-				values = self.pad_digits(values[1:])
+				values = ' '.join(
+					'  ' if integer == 0 else
+					f'{integer:2d}'
+					for integer in values[1:]
+				)
 
 			self.text(
 				f'{name[stat]:<9}: {values}',
 				text_offset_x + 15, text_offset_y * 32
 			)
 			text_offset_y += 1
-
-
-
-	def pad_digits(self, input_list: list[int]) -> str:
-		"""
-		creates a string representation of an integer list, where any number less than 10 is padded with a space
-		"""
-		return ' '.join(f'{integer:2d}' for integer in input_list)
 
 	def text(self, input_text: str, x: int = 32, y: int = 32):
 		self.screen.blit(
@@ -147,15 +150,18 @@ class Visualizer:
 			),
 			(x, y+10)
 		)
-		pg.display.update()
 
 	def convert_coordinates(self, latitude: float, longitude: float, offset = 0) -> list[float]:
 		"""
-		converts latitude and longitude to pixel coordinates. Ranges were made manually based on the corners of vienna_blank3_scaled_darkened.png
-		:param latitude: between 48.141826, 48.27906
-		:param longitude: between 16.212963, 16.5258723
-		:param offset: this is used to center a shape when its position is specified by its top left corner
-		:return: list of [x, y] pixel coordinates. Note that the values are somewhat flipped as latitude represents the y axis
+		Converts latitude and longitude to pixel coordinates. Ranges were made manually based on
+		the corners of `images/vienna_blank3_scaled_darkened_more.png`.
+		
+		:param latitude: Between 48.141826, 48.27906
+		:param longitude: Between 16.212963, 16.5258723
+		:param offset: This is used to center a shape when its position is specified by its top
+			left corner.
+		:return: List of [x, y] pixel coordinates. Note that the values are somewhat flipped as
+			latitude represents the y axis.
 		"""
 		return [
 			float(np.interp(
@@ -169,9 +175,10 @@ class Visualizer:
 
 	def get_position(self, location_index: int) -> tuple[float, float]:
 		"""
-		shorthand for calling `convert_coordinates` given only the index of a specific location
-		:param location_index: cannot exceed the initial place count
-		:return: tuple of x, y
+		Shorthand for calling `convert_coordinates` given only the index of a specific location.
+		
+		:param location_index: Cannot exceed the initial place count.
+		:return: Tuple of x, y.
 		"""
 		location_index -= 1
 		list_object = self.convert_coordinates(
@@ -182,7 +189,7 @@ class Visualizer:
 
 	def draw_places(self):
 		"""
-		for every place chosen, draw a circle via the image specificed in `self.place_circle`
+		For every place chosen, draw a circle via the image specified in `self.place_circle`.
 		"""
 		for lat, lon in zip(self.coordinates['latitude'], self.coordinates['longitude']):
 			self.screen.blit(
@@ -190,37 +197,11 @@ class Visualizer:
 				dest = (self.convert_coordinates(lat, lon, -5))
 			)
 
-	def generate_colors(self, amount: int) -> list[Color]:
-		"""
-		generate a list of random bright colors in the pygame.Color format
-		:param amount: number of colors to generate
-		:return: list of length `amount`
-		"""
-		# https://colorizer.org/
-		output_list = []
-		for _ in range(amount):
-			# generate HLS values
-			hue = random.randrange(0, 360)
-			if 215 < hue < 265:  # force colors within blue/purple range to be brighter
-				lightness = random.randrange(650, 800)
-			else:
-				lightness = random.randrange(500, 750)
-			saturation = random.randrange(666, 1000)
-			# convert to RGB
-			rgb_color = colorsys.hls_to_rgb(hue / 360, lightness / 1000, saturation / 1000)
-			# convert to list of Colors
-			output_list.append(pg.Color(
-				int(rgb_color[0] * 255),
-				int(rgb_color[1] * 255),
-				int(rgb_color[2] * 255))
-			)
-		return output_list
-
 	def test_colors(self):
 		"""
-		debugging function used to show an example of the generated colors
+		Debugging function used to show an example of the generated colors.
 		"""
-		test = self.generate_colors(30)
+		test = generate_colors(30)
 
 		for index, color in enumerate(test):
 			pg.draw.circle(
@@ -239,8 +220,11 @@ class Visualizer:
 
 	def draw_packages(self, env: dict):
 		"""
-		if a package is not in transit, use the generated colors to draw a circle for each package inside the place circle
-		:param env: info object from the environment step function to get the current package locations
+		If a package is not in transit, use the generated colors to draw a circle for each
+		package inside the place circle.
+		
+		:param env: Info object from the environment step function to get the current package
+			locations.
 		"""
 		for index, location in enumerate(env['p_location_current'][1:], start=1):
 			# if a package is on a vehicle (in transit), skip it
@@ -267,7 +251,8 @@ class Visualizer:
 
 	def draw_bike(self, x, y, vehicle_color):
 		"""
-		draws a bike at the specified position, where the x & y arguments indicate the middle point of the bike. Thus when this is draw on top of a location, it will be centered
+		Draws a bike at the specified position, where the x & y arguments indicate the middle
+		point of the bike. Thus, when this is drawn on top of a location, it will be centered.
 		"""
 		pg.draw.line(
 			self.screen,
@@ -328,6 +313,33 @@ class Visualizer:
 					color = self.colors['packages'][vehi('v_has_package')-1],
 					rect = (position[0]-2, position[1]-3, 4, 3),
 				)
+
+def generate_colors(amount: int) -> list[Color]:
+	"""
+	Generate a list of random bright colors in the `pygame.Color` format.
+	
+	:param amount: # of colors to generate.
+	:return: List of length `amount`.
+	"""
+	# https://colorizer.org/
+	output_list = []
+	for _ in range(amount):
+		# generate HLS values
+		hue = random.randrange(0, 360)
+		if 215 < hue < 265:  # force colors within blue/purple range to be brighter
+			lightness = random.randrange(650, 800)
+		else:
+			lightness = random.randrange(500, 750)
+		saturation = random.randrange(666, 1000)
+		# convert to RGB
+		rgb_color = colorsys.hls_to_rgb(hue / 360, lightness / 1000, saturation / 1000)
+		# convert to list of colors
+		output_list.append(pg.Color(
+			int(rgb_color[0] * 255),
+			int(rgb_color[1] * 255),
+			int(rgb_color[2] * 255))
+		)
+	return output_list
 
 # test = {
 # 	'v_transit_start':     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],

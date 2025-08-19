@@ -1,25 +1,26 @@
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
-from wien_env import WienEnv
+from ViennaEnv import ViennaEnv
 import numpy as np
 from visualizer import Visualizer as Vis
 import time
 from datetime import datetime
 import argparse
+from warnings import warn
 
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('action', type=str, choices=[
-		'train', 'test', 'vis', 'details'
-	])
+		'train', 'test', 'vis', 'details',
+	], nargs='?', default='vis')
 	parser.add_argument('environment_count', type=int,  nargs='?', default=10)
 	parser.add_argument('train_time_k',      type=int,  nargs='?', default=100)
 	parser.add_argument('place_count',       type=int,  nargs='?', default=80)
 	parser.add_argument('vehicle_count',     type=int,  nargs='?', default=5)
 	parser.add_argument('package_count',     type=int,  nargs='?', default=10)
 	parser.add_argument('verbose',           type=bool, nargs='?', default=False)
-	parser.add_argument('verbose_trig',      type=int,  nargs='?', default=100_000)
+	parser.add_argument('verbose_trig_k',    type=int,  nargs='?', default=2_000)
 
 	arguments = parser.parse_args()
 	environment_count = arguments.environment_count
@@ -29,8 +30,11 @@ if __name__ == '__main__':
 		'vehicle_count': arguments.vehicle_count,
 		'package_count': arguments.package_count,
 		'verbose': arguments.verbose,
-		'verbose_trigger': arguments.verbose_trig,
+		'verbose_trigger': arguments.verbose_trig_k * 1_000,
 	}
+	
+	if environment_options['verbose_trigger'] <= training_timesteps_k * 1_000:
+		warn('Verbosity trigger is smaller than training timesteps, so it will likely trigger.')
 
 	model_path = 'models/'
 
@@ -45,15 +49,34 @@ if __name__ == '__main__':
 
 	match arguments.action:
 		case 'train':
+			
+			start_time = time.time()
+			
 			print('training...')
 			vec_env = make_vec_env(
-				WienEnv,
+				ViennaEnv,
 				n_envs = environment_count,
 				env_kwargs = environment_options
 			)
 			model = PPO('MultiInputPolicy', vec_env, verbose=1)
 			model.learn(total_timesteps=training_timesteps_k * 1_000)
 			model.save(model_path + model_name)
+			
+			
+			results = (
+				f'\n{model_name}:'
+				f'\n\ttime of training:    {datetime.now().strftime("%y-%m-%d_%H-%M-%S")}'
+				f'\n\texecution time:      {time.time() - start_time}'
+				f'\n\tenvironment count:   {environment_count}'
+				f'\n\tenvironment options:'
+				f'\n\t\t* place_count:   {environment_options["place_count"]}'
+				f'\n\t\t* vehicle_count: {environment_options["vehicle_count"]}'
+				f'\n\t\t* package_count: {environment_options["package_count"]}'
+			)
+			
+			with open(model_path + 'training.log', 'a') as f:
+				f.write(results)
+			
 			print(f'Model saved as {model_name}')
 
 		case 'test':
@@ -62,7 +85,7 @@ if __name__ == '__main__':
 			print(f'Loaded model {model_name}')
 
 			vec_env = make_vec_env(
-				WienEnv,
+				ViennaEnv,
 				n_envs = environment_count,
 				env_kwargs = environment_options
 			)
@@ -90,8 +113,8 @@ if __name__ == '__main__':
 
 			results = (
 				f'\n{model_name}:'
-				f'\n\ttime of test:      {datetime.now().strftime("%y-%m-%d_%H-%M-%S")}'
-				f'\n\tenvironment count: {environment_count}'
+				f'\n\ttime of test:        {datetime.now().strftime("%y-%m-%d_%H-%M-%S")}'
+				f'\n\tenvironment count:   {environment_count}'
 				f'\n\tenvironment options:'
 				f'\n\t\t* place_count:   {environment_options["place_count"]}'
 				f'\n\t\t* vehicle_count: {environment_options["vehicle_count"]}'
@@ -102,19 +125,17 @@ if __name__ == '__main__':
 
 			print(results)
 
-			with open('results.txt', 'a') as f:
+			with open('testing.log', 'a') as f:
 				f.write(results)
 
-			f.close()
-
-			print('\nWrote to test results file')
+			print('\nWrote to test results file.')
 
 		case 'vis':
 			model = PPO.load(model_path + model_name)
-			print(f'Loaded model {model_name}')
+			print(f'Loaded model {model_name}.')
 
 			vis = Vis(environment_options)
-			env = WienEnv(**environment_options)
+			env = ViennaEnv(**environment_options)
 			obs, _ = env.reset()
 			done = False
 
@@ -124,10 +145,12 @@ if __name__ == '__main__':
 
 				vis.draw(info)
 				time.sleep(.2)
+			
+			input('Press ENTER to exit.')
 
 		case 'details':
 			model = PPO.load(model_path + model_name)
 			print(model.policy)
 
 		case _:
-			raise ValueError('action must be train, test, or vis')
+			raise ValueError('Action must be train, test, or vis.')

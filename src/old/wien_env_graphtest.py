@@ -3,7 +3,7 @@ import random
 from typing import Any
 import gymnasium as gym
 from gymnasium.spaces import MultiDiscrete, Dict, MultiBinary, Box
-from src.funcs import create_distance_matrix, filler, multi_disc
+from src.distances import create_distance_matrix, filler, multi_disc
 import numpy as np
 
 from src.old.wien_graph import WienGraph
@@ -236,5 +236,5 @@ class WienEnvGraph(gym.Env):
 		return distance
 
 
-#test = WienEnv().get_package_distances()
+#test = ViennaEnv().get_package_distances()
 

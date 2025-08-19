@@ -124,7 +124,7 @@ for place1 in range(len(picks)):
 
 
 
-import src.funcs as fn
+import src.distances as fn
 import numpy as np
 test = fn.create_distance_matrix()
 np.amax(test)
@@ -151,7 +151,7 @@ np.concatenate(array_of_arrays)
 
 
 from stable_baselines3.common.env_checker import check_env
-#from src.wien_env import WienEnv
+#from src.wien_env import ViennaEnv
 from src.old.wien_env_graphtest import WienEnvGraph
 
 check_env(WienEnvGraph())
@@ -179,7 +179,7 @@ test = v_infos + p_infos
 
 
 
-from src.funcs import create_distance_matrix
+from src.distances import create_distance_matrix
 test = create_distance_matrix(20)
 
 

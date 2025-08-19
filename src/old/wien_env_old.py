@@ -7,7 +7,7 @@ from gymnasium.spaces import (
 	Dict, Discrete, MultiBinary
 )
 from src.old.wien_graph import WienGraph
-from src.funcs import create_distance_matrix, filler
+from src.distances import create_distance_matrix, filler
 import numpy as np
 
 class WienEnv(gym.Env):

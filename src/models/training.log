@@ -1,0 +1,9 @@
+
+ppo_vrp_e10-t1000_pvp-10-1-3:
+	time of test:      25-08-19_16-05-18
+	execution time:    740.1664748191833
+	environment count: 10
+	environment options:
+		* place_count:   10
+		* vehicle_count: 1
+		* package_count: 3

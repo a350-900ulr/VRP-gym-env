@@ -1,4 +1,4 @@
-from src.wien_env import WienEnv
+from src.ViennaEnv import ViennaEnv
 from src.visualizer import Visualizer as Vis
 import numpy as np
 
@@ -8,7 +8,7 @@ environment_options = {
 	'package_count': 1,
 }
 
-env = WienEnv(**environment_options)
+env = ViennaEnv(**environment_options)
 
 vis = Vis(environment_options)
 #vis.test_colors()

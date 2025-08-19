@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
 			print(results)
 
-			with open('../results.txt', 'a') as f:
+			with open('../models/testing.log', 'a') as f:
 				f.write(results)
 
 			f.close()
