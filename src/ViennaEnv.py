@@ -117,7 +117,7 @@ class ViennaEnv(gym.Env):
 		# possible values are in the range of the number of locations
 		self.action_space = MultiDiscrete(vehicle_count * [self.place_count])
 	
-	def reset(self, seed=None, verbose=False) -> tuple[
+	def reset(self, seed=None, verbose: bool = None) -> tuple[
 		dict[str, Any],
 		dict[str, int]
 	]:
@@ -126,10 +126,15 @@ class ViennaEnv(gym.Env):
 		re-initialized with random vehicle & package positions to be delivered.
 		
 		:param seed: Alters `np_random_seed`.
-		:param verbose: Print out package location data.
+		:param verbose: Overrides the class attribute `self.verbose`. The method in verbose mode
+			will print out package location data.
 		:return: environment, info
 		"""
 		super().reset(seed=seed)
+		
+		verbose_internal = self.verbose if verbose is None else verbose
+
+		
 		
 		self.clock = 0  # total time the episode has been running
 		self.total_travel = 0  # sum of all distance traveled by all vehicles
@@ -165,10 +170,11 @@ class ViennaEnv(gym.Env):
 			'p_transit_extra': filler(self.package_count,)
 		}
 		
-		if verbose:
+		if verbose_internal:
 			print(
-				f"\ncurr: {len(environment_object['p_location_current'])}"
-				f"\ntarg: {len(environment_object['p_location_target'])}"
+				f'reset(), package locations{"-"*32}'
+				f'\n\tcurr: {environment_object["p_location_current"]}'
+				f'\n\ttarg: {environment_object["p_location_target"]}'
 			)
 		
 		# fill origin & target destinations with random unique values
@@ -185,17 +191,14 @@ class ViennaEnv(gym.Env):
 
 			environment_object['p_location_target'].append(locations[p-2+self.package_count])
 
-			if verbose:
-				print(f'\nindex: {p}')
-			
 			# assign the ideal package distances
 			self.package_ratios[p]['ideal'] = \
 				self.distance_matrix[locations[p-1]][locations[p-2+self.package_count]] + 1
-			if verbose:
+			if verbose_internal:
 				print(
-					f'\nFor package {p}:'
-					f'\n\tfrom {locations[p-1]} to {locations[p-2+self.package_count]}'
-					f'\n\tgot value {self.distance_matrix[locations[p-1]][locations[p-2+self.package_count]] + 1}'
+					f'* for package {p}:'
+					f'from {locations[p-1]} to {locations[p-2+self.package_count]}, '
+					f'got value {self.distance_matrix[locations[p-1]][locations[p-2+self.package_count]] + 1}'
 				)
 		
 		# set the delivered status of package 0 to true, so that the simulation can still detect
@@ -229,7 +232,11 @@ class ViennaEnv(gym.Env):
 				f'set by verbose trigger. Verbosity is now enabled'
 			)
 
-		if self.verbose: print(f'{action}{"-"*32}')
+		if self.verbose:
+			print(
+				f'\nstep(), Dispatcher action{"-"*32}'
+				f'\n\t{action}'
+			)
 
 		for dispatch_location in action:
 			assert dispatch_location in range(self.place_count)
@@ -318,7 +325,11 @@ class ViennaEnv(gym.Env):
 						vehi('v_transit_end') == pack('p_location_current') and
 						vehi('v_transit_remaining') == 0  # vehicle is not moving
 					):
-						if self.verbose: print(f'package {p} picked up by vehicle {v}')
+						if self.verbose:
+							print(
+								f'automate_packages(), pickup detected{"-"*32}'
+								f'package {p} picked up by vehicle {v}'
+							)
 						vehi_set('v_has_package', p)
 						pack_set('p_carrying_vehicle', v)
 
@@ -337,7 +348,7 @@ class ViennaEnv(gym.Env):
 					vehi('v_transit_remaining') == 0
 				):
 					if self.verbose:
-						print(f'package {p} delivered by vehicle {pack("p_carrying_vehicle")}')
+						print(f'*package {p} delivered by vehicle {pack("p_carrying_vehicle")}')
 					vehi_set('v_has_package', 0)
 					pack_set('p_location_current', pack('p_location_target'))
 					pack_set('p_carrying_vehicle', 0)
@@ -349,6 +360,8 @@ class ViennaEnv(gym.Env):
 					if pack('p_transit_extra') > 1:
 						print('breakpoint')
 						# why? self.package_origins differs from the print statement after generating, run in debug mode
+						print('hi')
+					
 		
 		#return sum(self.environment['p_delivered']-1)
 		return sum(self.environment['p_transit_extra'])
