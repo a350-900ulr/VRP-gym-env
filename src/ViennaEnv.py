@@ -3,7 +3,6 @@ import random
 from typing import Any
 import gymnasium as gym
 from gymnasium.spaces import MultiDiscrete, Dict, MultiBinary, Box
-
 from distances import create_distance_matrix
 import numpy as np
 import time
@@ -46,8 +45,7 @@ class ViennaEnv(gym.Env):
 			} for _ in range(self.package_count)
 		]
 		
-		# initial values for environment itself, this is also used during self.step()
-		self.environment = self.reset()[0]
+		self.environment = {}
 		
 		self.observation_space = Dict({
 			# # information of all location distances, regardless of how many locations end up
@@ -134,8 +132,6 @@ class ViennaEnv(gym.Env):
 		
 		verbose_internal = self.verbose if verbose is None else verbose
 
-		
-		
 		self.clock = 0  # total time the episode has been running
 		self.total_travel = 0  # sum of all distance traveled by all vehicles
 		self.package_origins = []
@@ -204,6 +200,8 @@ class ViennaEnv(gym.Env):
 		# set the delivered status of package 0 to true, so that the simulation can still detect
 		# when all packages are delivered
 		environment_object['p_delivered'][0] = True
+		
+		self.environment = environment_object
 		
 		return (
 			environment_object,
@@ -290,6 +288,11 @@ class ViennaEnv(gym.Env):
 		:return: # of packages that have been delivered multiplied by their extra transit ratio
 			for the reward function.
 		"""
+		
+		if self.verbose:
+			print(
+				f'\nautomate_packages(){"-"*32}'
+			)
 
 		for p in range(1, self.package_count):
 
@@ -304,7 +307,7 @@ class ViennaEnv(gym.Env):
 			if (
 				pack('p_carrying_vehicle') != 0 and
 				pack('p_location_current') != (updated_location :=
-						self.environment['v_transit_start'][pack('p_carrying_vehicle')]
+					self.environment['v_transit_start'][pack('p_carrying_vehicle')]
 				)
 			):
 				pack_set('p_location_current', updated_location)
@@ -327,7 +330,7 @@ class ViennaEnv(gym.Env):
 					):
 						if self.verbose:
 							print(
-								f'automate_packages(), pickup detected{"-"*32}'
+								f'automate_packages(), pickup detected'
 								f'package {p} picked up by vehicle {v}'
 							)
 						vehi_set('v_has_package', p)
@@ -357,11 +360,6 @@ class ViennaEnv(gym.Env):
 						'p_transit_extra',
 						self.package_ratios[p]['ideal'] / self.package_ratios[p]['actual']
 					)
-					if pack('p_transit_extra') > 1:
-						print('breakpoint')
-						# why? self.package_origins differs from the print statement after generating, run in debug mode
-						print('hi')
-					
 		
 		#return sum(self.environment['p_delivered']-1)
 		return sum(self.environment['p_transit_extra'])
