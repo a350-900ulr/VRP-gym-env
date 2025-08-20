@@ -63,9 +63,9 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('action', type=str, choices=[
 		'train', 'test', 'vis', 'details',
-	], nargs='?', default='train')
+	], nargs='?', default='vis')
 	parser.add_argument('environment_count', type=int,  nargs='?', default=10)
-	parser.add_argument('train_time_k',      type=int,  nargs='?', default=10_000)
+	parser.add_argument('train_time_k',      type=int,  nargs='?', default=1_000)
 	parser.add_argument('place_count',       type=int,  nargs='?', default=80)
 	parser.add_argument('vehicle_count',     type=int,  nargs='?', default=5)
 	parser.add_argument('package_count',     type=int,  nargs='?', default=10)

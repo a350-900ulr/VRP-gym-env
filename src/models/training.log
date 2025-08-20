@@ -7,3 +7,12 @@ ppo_vrp_e10-t1000_pvp-10-1-3:
 		* place_count:   10
 		* vehicle_count: 1
 		* package_count: 3
+ppo_vrp_e10-t10000_pvp-80-5-10:
+	time of training:    25-08-20_21-39-56
+	execution time:      19150.6192278862
+	training time steps: 10000000
+	environment count:   10
+	environment options:
+		* place_count:   80
+		* vehicle_count: 5
+		* package_count: 10

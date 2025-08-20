@@ -15,7 +15,9 @@
 ## Introduction <a name="introduction"></a>
 
 The efficient operation of a vehicle fleet in order to transfer goods has always been a difficult problem to tackle in the field of optimization. This problem has been formalized as the Vehicle Routing Problem (VRP), an extension of the Traveling Salesman Problem. The goal is to deliver as much as possible with the fewest resources. As one can imagine, there are virtually infinite possible variations to constrain the problem in, though they usually resemble those found in real-world freight companies. In my implementation, I attempt to solve a specific simplification where there are only bikes that are capable of handling 1 package. Furthermore, every bike automatically picks up &
-delivers any packages it passes over. Having only 1 type of vehicle & 1 type of package massively simplifies the action space in the environment. The model does however have the ability to assign no action to a vehicle & have it wait in its current location.
+delivers any packages it passes over. Having only 1 type of vehicle & 1 type of package massively simplifies the action space in the environment. The model does, however, have the ability to assign no action to a vehicle & have it wait in its current location.
+
+![Screenshot from 2025-08-20 21-48-43.png](images/Screenshot%20from%202025-08-20%2021-48-43.png)
 
 ## Setup <a name="setup"></a>
 
@@ -38,7 +40,7 @@ After cloning the repository,
 
 ### Model options <a name='model_options'></a>
  * **environment_count** - number of simultaneous environments to train/test on. In the visualization case, this argument is only used to load the correct model as only 1 environment can be visualized
- * **training_timesteps_k** - max number of iterations to train on multiplied by 1,000. This argument is used when training the model, otherwise it is only to load the correct model for test/vis
+ * **training_timesteps_k** - max number of iterations to train on multiplied by 1,000. This argument is used when training the model; otherwise it is only to load the correct model for test/vis
 
 ### Environment options <a name='environment_options'></a>
 * **place_count** - number of places in the environment. This can be in the range from 1-80, & defaults to 80
